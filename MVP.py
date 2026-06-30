@@ -36,7 +36,7 @@ def selectdestination():
 
 # destination = selectdestination()
 
-# ===== PRE FLIGHT SHIT ====
+# ===== PRE FLIGHT ====
 
 
 def check_source_existance(sources):
@@ -164,3 +164,44 @@ if errors:
     exit(1)
 
 print("Pre-flight passed. Starting backup...")
+
+def copying(source, destination, chunk_size_mb=4, progress_callback=None):
+    chunk_size = chunk_size_mb * 1024 * 1024
+    
+    total_size = source.stat().st_size
+    bytescopied = 0
+
+    with open(source, "rb") as src, open(destination, "wb") as dst:
+        while True:
+            chunk = src.read(chunk_size)
+            if not chunk:
+                break
+            dst.write(chunk)
+            bytescopied += len(chunk)
+
+            if progress_callback:
+                progress_callback(bytescopied, total_size)
+
+
+def progress_bar(bytescopied, total_size):
+    precent = (bytescopied / total_size) * 100
+    print(f"\r {precent:.1f}% {bytescopied // 1024**2}MB / {total_size // 1024**2}MB", end="")
+
+    copying(sources, destination, progress_callback=progress_bar)
+
+def run_backup(sources, destination):
+    total = len(sources)
+
+    for i, source in enumerate(sources, 1):
+        # TODO: implement the logic for making sub-directories of the root of the sources. Currently copying to root of destination
+
+        dest_path = destination / source.name
+
+        print(f"[{i}/{total}] {source.name}")
+
+        copying(source, dest_path, progress_callback=progress_bar)
+        print()
+
+run_backup(sources, destination)
+
+
