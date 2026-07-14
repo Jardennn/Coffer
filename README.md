@@ -6,7 +6,7 @@ It is not the main project. The full C# implementation lives on the `dev` and `m
 
 ## Running it
 ```bash
-python main.py
+python MVP.py
 ```
 
 ## Status

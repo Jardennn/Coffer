@@ -1,6 +1,6 @@
+import hashlib
 import os
 import shutil
-import warnings
 from pathlib import Path
 from unittest import result
 
@@ -12,12 +12,12 @@ from unittest import result
 
 sources = []
 
+sources = [Path("/home/jarden/Desktop/tests")]  # Hard coded for testing
+
 
 def selectsources():
     while True:
-        user_input = input(
-            "Enter the absolute path of your source (Enter 0 to stop) \n"
-        )
+        user_input = input("Enter the root paths of your sources (Enter 0 to stop) \n")
 
         if user_input == "0":
             print("Stop value entered, breaking loop.")
@@ -165,11 +165,14 @@ if errors:
 
 print("Pre-flight passed. Starting backup...")
 
+
 def copying(source, destination, chunk_size_mb=4, progress_callback=None):
     chunk_size = chunk_size_mb * 1024 * 1024
-    
+
     total_size = source.stat().st_size
     bytescopied = 0
+
+    hasher = hashlib.sha256()
 
     with open(source, "rb") as src, open(destination, "wb") as dst:
         while True:
@@ -179,29 +182,99 @@ def copying(source, destination, chunk_size_mb=4, progress_callback=None):
             dst.write(chunk)
             bytescopied += len(chunk)
 
+            hasher.update(chunk)
+
             if progress_callback:
                 progress_callback(bytescopied, total_size)
+
+    return hasher.hexdigest()
 
 
 def progress_bar(bytescopied, total_size):
     precent = (bytescopied / total_size) * 100
-    print(f"\r {precent:.1f}% {bytescopied // 1024**2}MB / {total_size // 1024**2}MB", end="")
+    print(
+        f"\r {precent:.1f}% {bytescopied // 1024**2}MB / {total_size // 1024**2}MB",
+        end="",
+    )
 
     copying(sources, destination, progress_callback=progress_bar)
 
+
+def remove_nested_sources(sources):
+    fullpaths = [Path(p).resolve() for p in sources]
+    fullpaths.sort(key=lambda p: len(p.parts))
+
+    filtered = []
+    for path in fullpaths:
+        if not any(path.is_relative_to(kept) for kept in filtered):
+            filtered.append(path)
+
+    return filtered
+
+
+def get_dest_path(source, source_root, destination):
+    relative = source.relative_to(
+        source_root
+    )  # Strips out the relative to source part so it would be 'file.ext' or 'directory/file.ext' instead of the full source path
+
+    dest_path = (
+        destination / source_root.name / relative
+    )  # Connects the destination, the name of the directory of the root source and the relative
+
+    return dest_path
+
+
+def verify(source_hash, destination, chunk_size_mb=4):
+    chunk_size = chunk_size_mb * 1024 * 1024
+    hasher = hashlib.sha256()
+
+    with open(destination, "rb") as d:
+        while True:
+            chunk = d.read(chunk_size)
+            if not chunk:
+                break
+            hasher.update(chunk)
+
+    dst_hash = hasher.hexdigest()
+    return source_hash == dst_hash
+
+
 def run_backup(sources, destination):
-    total = len(sources)
 
-    for i, source in enumerate(sources, 1):
-        # TODO: implement the logic for making sub-directories of the root of the sources. Currently copying to root of destination
+    for orig in sources:
+        print(f"true original: {orig}")
 
-        dest_path = destination / source.name
+    root_sources = remove_nested_sources(sources)  # Root of sources
 
-        print(f"[{i}/{total}] {source.name}")
+    for origroot in root_sources:
+        print(f"root original: {origroot}")
 
-        copying(source, dest_path, progress_callback=progress_bar)
-        print()
+    for source in root_sources:  # One source out of root_sources
+        for fpath in source.rglob(
+            "*"
+        ):  # Gets an absolute path of the file from searching for all enteries on the source root.
+            print(f"source: {source}")
+
+            if not fpath.is_file():
+                continue
+
+            dest_path = get_dest_path(fpath, source, destination)
+
+            print(f"destination: {dest_path}")
+
+            dest_path.parent.mkdir(parents=True, exist_ok=True)
+
+            print(f"\n{fpath.name}", end="  ....  ")
+
+            src_hash = copying(fpath, dest_path, progress_callback=progress_bar)
+            verifying = verify(src_hash, dest_path)
+
+            if verifying:
+                print("OK")
+            else:
+                print("FAILED - checksum mismatch")
+
+        print("\nFile transfer done.")
+
 
 run_backup(sources, destination)
-
-
