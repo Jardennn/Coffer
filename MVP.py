@@ -3,17 +3,35 @@ import os
 import shutil
 from pathlib import Path
 from unittest import result
+import json
 
-# profile_file = Path.cwd() / "BackupManagerConf" / "profile.json"
-# lastrun_file = Path.cwd() / "BackupManagerConf" / "lastrun.json"
+filters = Path.cwd() / "filters.json"
 
-# TODO: should eventually add config and lastrun jsons eventually. Should work better with what claude wrote and with the adaptation of funtions.
-# The program would ask the user for if they would want to save their current run as a profile for future use and it will save every last run in the last run file.
+def loaddata():
+    if not filters.exists():
+        # I'm adding this little amount of filters just for the sake of testing, the C# implementation will have more filters than what is present here.
+        data = { 
+                "exclude_extensions": [],
+                "max_size_mb": None,
+                "exclude_folders": [],
+                "skip_hidden": False
+                }
+        with open(filters, "w") as f:
+            json.dump(data, f, indent=2)
+        return data
+
+    else:
+        with open(filters, "r") as f:
+            return json.load(f)
+        
+
+loadedfilters = loaddata()
 
 sources = []
 
-sources = [Path("/home/jarden/Desktop/tests")]  # Hard coded for testing
+#sources = [Path("/home/jarden/Desktop/tests")]  # Hard coded for testing
 
+sources = [Path("/home/jarden/Desktop/tests")]
 
 def selectsources():
     while True:
@@ -165,6 +183,21 @@ if errors:
 
 print("Pre-flight passed. Starting backup...")
 
+def should_include(fpath, filters): 
+    if fpath.suffix in filters["exclude_extensions"]: # Checking if the extension of the current working path is included in the filters
+        return False
+    
+    if filters["max_size_mb"] != None: # If the filter is set to None, there will be no size limit for the transfer.
+        if fpath.stat().st_size > filters["max_size_mb"] * 1024 * 1024: # Comparing both sizes in bytes 
+            return False
+
+    if any(part in filters["exclude_folders"] for part in fpath.parts): # Checking if the excluded folders are in the target path
+        return False
+
+    if filters["skip_hidden"] and fpath.name.startswith("."): # Dedicated for linux file systems for testing purposes, final product will have cross platform support.
+        return False
+
+    return True
 
 def copying(source, destination, chunk_size_mb=4, progress_callback=None):
     chunk_size = chunk_size_mb * 1024 * 1024
@@ -255,24 +288,26 @@ def run_backup(sources, destination):
         ):  # Gets an absolute path of the file from searching for all enteries on the source root.
             print(f"source: {source}")
 
-            if not fpath.is_file():
-                continue
+            if should_include(fpath, loadedfilters):
 
-            dest_path = get_dest_path(fpath, source, destination)
+                if not fpath.is_file():
+                    continue
+            
+                dest_path = get_dest_path(fpath, source, destination)
 
-            print(f"destination: {dest_path}")
+                print(f"destination: {dest_path}")
 
-            dest_path.parent.mkdir(parents=True, exist_ok=True)
+                dest_path.parent.mkdir(parents=True, exist_ok=True)
 
-            print(f"\n{fpath.name}", end="  ....  ")
+                print(f"\n{fpath.name}", end="  ....  ")
 
-            src_hash = copying(fpath, dest_path, progress_callback=progress_bar)
-            verifying = verify(src_hash, dest_path)
+                src_hash = copying(fpath, dest_path, progress_callback=progress_bar)
+                verifying = verify(src_hash, dest_path)
 
-            if verifying:
-                print("OK")
-            else:
-                print("FAILED - checksum mismatch")
+                if verifying:
+                    print("OK")
+                else:
+                    print("FAILED - checksum mismatch")
 
         print("\nFile transfer done.")
 
