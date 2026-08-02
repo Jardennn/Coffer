@@ -1,0 +1,40 @@
+﻿using System;
+using System.IO;
+using System.Security.Cryptography;
+
+namespace Coffer.Services
+{
+    public class Copier
+    {
+        public static string CopyFile(string src, string dst, int chunk_size_mb)
+        {
+            int chunk_size = chunk_size_mb * 1024 * 1024; // Converting the chunk size from MB's to Bytes.
+            byte[] chunk = new byte[chunk_size];
+            long bytes_copied = 0;
+
+            FileInfo fileInfo = new FileInfo(src);
+
+            long total_size = fileInfo.Length;  // Getting the source file size in Bytes.
+
+             using IncrementalHash sha256 = IncrementalHash.CreateHash(HashAlgorithmName.SHA256); // Creating the hash instance in SHA256.
+
+            using (FileStream source = File.OpenRead(src)) // Starting a stream to read from the source file.
+            using (FileStream destination = File.OpenWrite(dst)) // Starting a stream to write to the destination file.
+            {
+                int bytesRead;
+
+                while ((bytesRead = source.Read(chunk, 0, chunk.Length)) > 0) // Reading the bytes from the source up to how much the chunk is supposed to be, assigning it to an integer that tells how much bytes were read and checking if it's greater than zero.
+                {
+                    destination.Write(chunk, 0, bytesRead); // Writing to the destination from the chunk that was read in the loop statement, from index 0 to the index that is bytesRead.
+                    bytes_copied += bytesRead; // Adding how much bytes were copied in this write, for the output.
+
+                    sha256.AppendData(chunk, 0, bytesRead); // Appending data to the hash from the read chunk. Starting from index 0 up to the index that is assigned in bytesRead.
+                }
+            }
+            byte[] hash = sha256.GetHashAndReset();
+            string hexString = Convert.ToHexString(hash);
+
+            return hexString;
+        }
+    }
+}
