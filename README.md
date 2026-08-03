@@ -11,3 +11,11 @@ Cross-platform local backup tool with smart filtering and integrity verification
 - SHA256 integrity verification
 - Backup profiles saved between runs (Saves the last run profile and asks the user about saving that profile in storage)
 - Cross-platform (Windows, Linux, MacOS)
+
+## Status and completion points
+
+- [ ] Core services and progress reporting (Copier, Verifier, Scanner)
+- [ ] Preflight checks
+- [ ] Profile save/load
+- [ ] GUI version
+- [ ] Full project complete
