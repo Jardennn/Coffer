@@ -6,7 +6,8 @@ namespace Coffer.Services
 {
     public class Copier
     {
-        public static string CopyFile(string src, string dst, int chunk_size_mb)
+        // onProgrss is a variable type that points to a void method that gets two 'long' variables as arguments and can be nullable (as it is already nullable from the start).
+        public static string CopyFile(string src, string dst, int chunk_size_mb, Action<long, long>? onProgress = null)
         {
             int chunk_size = chunk_size_mb * 1024 * 1024; // Converting the chunk size from MB's to Bytes.
             byte[] chunk = new byte[chunk_size];
@@ -29,6 +30,7 @@ namespace Coffer.Services
                     bytes_copied += bytesRead; // Adding how much bytes were copied in this write, for the output.
 
                     sha256.AppendData(chunk, 0, bytesRead); // Appending data to the hash from the read chunk. Starting from index 0 up to the index that is assigned in bytesRead.
+                    onProgress?.Invoke(bytes_copied, total_size); // Runs the onProgress method, '?' is for continuing on with the code if the method is null (instead of crashing).
                 }
             }
             byte[] hash = sha256.GetHashAndReset();

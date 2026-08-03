@@ -28,7 +28,8 @@ cd Coffer.Core && dotnet run
 > The completion points here are going to be similar to the completion points on the `main` branch.
 > Points here are representing milestones that were reached but not pushed to `main` or tested.
 
-- [ ] Core services and progress reporting (Copier, Verifier, Scanner)
+- [x] Core services and progress reporting (Copier, Verifier, Scanner)
+- [ ] Filters
 - [ ] Preflight checks
 - [ ] Profile save/load
 - [ ] GUI version

@@ -8,38 +8,47 @@ namespace Coffer.Core
     {
         static void Main(String[] args)
         {
-            // Code for testing copier and verifier, for now.
-            string[] paths = {
-                "/path/to/your/source/file1.ext",
-                "/path/to/your/source/file2.ext",
-            };
 
-            string[] dst = {
-                "/path/to/your/destination/file1.ext",
-                "/path/to/your/destination/file2.ext",
-            };
-
-            // In the arrays above switch the placeholder paths with your actual paths.
-            // Notice that I used absolute paths as I haven't made yet the function to automatically make the paths connect with their entries (Giving the program the root of your source/destination and making up the absolute path according to entries and children of the given path.).
+            // Now instead of putting your absolute paths in an array you need to put your root source paths in an array and root destination path in a single string.
+            string[] srcpaths = ["/path/to/root/source/"];
+            string dst = "/path/to/root/destination/";
 
             Console.WriteLine("Starting data transfer.");
-            for (int i = 0; i < paths.Length; i++)
+            for (int i = 0; i < srcpaths.Length; i++) // Going through every path in srcpaths
             {
-                string path = paths[i];
-                string dstpath = dst[i];
+                string srcpath = srcpaths[i];
 
-                Console.WriteLine($"Beginning data transfer for: {path}");
-                string srchash = Copier.CopyFile(path, dstpath, 4);
-
-                Console.WriteLine("Transfer complete, beginning hash verficiation.");
-                bool verification = Verifier.Verify(srchash, dstpath, 4);
-
-                if (verification)
+                foreach (var filepath in Scanner.Scan(srcpath))
                 {
-                    Console.WriteLine("Verify complete.");
+                    string filepathstr = filepath.FullName;
+                    string dstpath = GetDest.GetDestPath(srcpath, filepathstr, dst);
+
+                    Directory.CreateDirectory(Path.GetDirectoryName(dstpath)!); // Creates a directory in the same name of a directory that contains a nested source file.
+
+                    Console.WriteLine($"Beginning data transfer for: {filepathstr}");
+                    string srchash = Copier.CopyFile(filepathstr, dstpath, 4, onProgress: (copied, total) => // Using lambda to pass onProgress as a function that will take 'copied' and 'total' as arguments.
+                    {
+                        int percent = (int)((double)copied / total * 100); // Percentage calculation for how much of the file was copied.
+                        int filled = percent / 2; // Making the progress bar 50 characters wide
+                        string bar = new string('█', filled) + new string('░', 50 - filled); // Two strings are combined to make the progress bar, the filled blocks are in the same length as 'filled' that changes dynamically and the empty blocks are the full length of the bar (50) - the filled blocks (filled variable).
+                        Console.Write($"\r [{bar}] {percent}% {copied / 1024 / 1024}MB / {total / 1024 / 1024}MB"); // Output of the progress bar, \r moves the console back to the beginning of the line for updating the progress bar.
+                    });
+                    Console.WriteLine();
+
+                    Console.WriteLine("Transfer complete, beginning hash verficiation.");
+                    bool verification = Verifier.Verify(srchash, dstpath, 4);
+
+                    if (verification)
+                    {
+                        Console.WriteLine("Verify complete.");
+                    }
+                    else
+                        Console.WriteLine("Verification failed.");
+
+                    Console.Write("\n--------------------------------\n");
                 }
-                else
-                    Console.WriteLine("Verification failed.");
+
+
             }
             Console.WriteLine("Backup complete.");
         }
