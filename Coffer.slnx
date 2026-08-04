@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Coffer.Core/Coffer.Core.csproj" />
+  <Project Path="Coffer.Services/Coffer.Services.csproj" />
+</Solution>

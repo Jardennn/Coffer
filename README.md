@@ -14,7 +14,8 @@ Cross-platform local backup tool with smart filtering and integrity verification
 
 ## Status and completion points
 
-- [ ] Core services and progress reporting (Copier, Verifier, Scanner)
+- [x] Core services and progress reporting (Copier, Verifier, Scanner)
+- [ ] Filters
 - [ ] Preflight checks
 - [ ] Profile save/load
 - [ ] GUI version
