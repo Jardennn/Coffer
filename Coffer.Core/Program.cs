@@ -10,15 +10,22 @@ namespace Coffer.Core
         {
 
             // Now instead of putting your absolute paths in an array you need to put your root source paths in an array and root destination path in a single string.
-            string[] srcpaths = ["/path/to/root/source/"];
-            string dst = "/path/to/root/destination/";
+             string[] srcpaths = ["/path/to/root/source/"];
+             string dst = "/path/to/root/destination/";
 
             Console.WriteLine("Starting data transfer.");
             for (int i = 0; i < srcpaths.Length; i++) // Going through every path in srcpaths
             {
                 string srcpath = srcpaths[i];
+                List<FileInfo> filepaths = Scanner.Scan(srcpath);
 
-                foreach (var filepath in Scanner.Scan(srcpath))
+                if (filepaths.Count == 0)
+                {
+                    Console.WriteLine($"No files found in {srcpath}, skipping.");
+                    continue;
+                }
+
+                foreach (var filepath in filepaths)
                 {
                     string filepathstr = filepath.FullName;
                     string dstpath = GetDest.GetDestPath(srcpath, filepathstr, dst);
