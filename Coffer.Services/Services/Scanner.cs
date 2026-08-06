@@ -17,68 +17,114 @@ namespace Coffer.Services
             }
             return results;
         }
+
         
-        public static bool HiddenDetect(FileInfo file)
-        {
-          if (OperatingSystem.IsWindows())
-          {
-            if (file.Attributes.HasFlag(FileAttributes.Hidden))
-            {
-              return true;
-            }
-
-            return false;
-          }
-
-          if (OperatingSystem.IsLinux())
-          {
-            if (file.Name.StartsWith("."))
-            {
-              return true;
-            }
-
-            return false;
-          }
-
-          if (OperatingSystem.IsMacOS())
-          {
-            if (file.Name.StartsWith(".") || file.Attributes.HasFlag(FileAttributes.Hidden))
-            {
-              return true;
-            }
-
-            return false;
-          }
-
-          return false;
-        }
 
         public static bool ShouldInclude(FileInfo file, FilterConfig filters)
         {
-          if (filters.ExcludeExtensions.Contains(file.Extension.ToLower())) // Extension filtering
-          {
-            return false;
-          }
+            if (filters.ExcludeExtensions.Contains(file.Extension.ToLower())) // Extension exclusion filtering
+            {
+                return false;
+            }
 
-          if (file.Length > filters.MaxSizeMB) // File size limiation in MB
-          {
-            return false;
-          }
+            if (filters.IncludeExtensions.Contains(file.Extension.ToLower()) == false) // Extension inclusion filtering
+            {
+                return false;
+            }
 
-          foreach (var excludedFolder in filters.ExcludeFolders) // Folder filtering (Checking if the given folder is in the full path of the given file)
-          {
-            if (file.FullName.Contains(Path.DirectorySeparatorChar + excludedFolder + Path.DirectorySeparatorChar))
+            if (file.Length > filters.MaxSizeMB) // File size limiation in MB
+            {
+                return false;
+            }
+
+            if (file.Length < filters.MinSizeMB) // File size filtering by minimum MBs
+            {
+                return false;
+            }
+
+            foreach (var excludedFolder in filters.ExcludeFolders) // Folder filtering (Checking if the given folder is in the full path of the given file)
+            {
+                if (file.FullName.Contains(Path.DirectorySeparatorChar + excludedFolder + Path.DirectorySeparatorChar))
+                {
+                    return false;
+                }
+            }
+
+            foreach (var excludedPath in filters.ExcludePaths)
+            {
+                if (file.FullName.StartsWith(excludedPath))
+                {
+                    return false;
+                }
+            }
+
+            if (filters.SkipHidden && Detectors.HiddenDetect(file)) // Hidden files filtering (Checking if SkipHidden is set to true and using the hidden detection funtion for detecting if the path is hidden.)
+            {
+                return false;
+            }
+
+            if (filters.SkipReadOnly && file.IsReadOnly)
+            {
+                return false;
+            }
+
+            if (filters.SkipSystemFiles && Detectors.SystemFileDetect(file))
+            {
+                return false;
+            }
+
+            if (!filters.FollowSymlinks && file.LinkTarget != null)
+            {
+                return false;
+            }
+
+            if (!filters.FollowSymlinks && Detectors.SymlinkParentDetect(file))
+            {
+                return false;
+            }
+
+            if (filters.ModifiedAfter.HasValue && DateTime.Compare(filters.ModifiedAfter.Value, file.LastWriteTime) < 0)
             {
               return false;
             }
-          }
 
-          if (filters.SkipHidden && HiddenDetect(file)) // Hidden files filtering (Checking if SkipHidden is set to true and using the hidden detection funtion for detecting if the path is hidden.)
-          {
-            return false;
-          }
+            if (filters.ModifiedBefore.HasValue && DateTime.Compare(filters.ModifiedBefore.Value, file.LastWriteTime) > 0)
+            {
+              return false;
+            }
 
-          return true;
+            if (filters.CreatedAfter.HasValue && DateTime.Compare(filters.CreatedAfter.Value, file.CreationTime) < 0)
+            {
+              return false;
+            }
+
+            if (filters.CreatedBefore.HasValue && DateTime.Compare(filters.CreatedBefore.Value, file.CreationTime) > 0)
+            {
+              return false;
+            }
+
+            if (filters.ModifiedWithinDays.HasValue)
+            {
+              DateTime Cutoff = DateTime.Now.AddDays(-filters.ModifiedWithinDays.Value);
+
+              if (file.LastWriteTime < Cutoff)
+              {
+                return false;
+              }
+            }
+
+            if (filters.CreatedWithinDays.HasValue)
+            {
+              DateTime Cutoff = DateTime.Now.AddDays(-filters.CreatedWithinDays.Value);
+
+              if (file.CreationTime < Cutoff)
+              {
+                return false;
+              }
+            }
+
+            return true;
+
         }
     }
 }
