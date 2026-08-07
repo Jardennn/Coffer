@@ -15,6 +15,16 @@ namespace Coffer.Services
                     return true;
                 }
 
+                DirectoryInfo? dir = file.Directory;
+                while(dir != null)
+                {
+                    if (dir.Attributes.HasFlag(FileAttributes.Hidden))
+                    {
+                        return true;
+                    }
+                    dir = dir.Parent;
+                }
+
                 return false;
             }
 
@@ -23,6 +33,16 @@ namespace Coffer.Services
                 if (file.Name.StartsWith("."))
                 {
                     return true;
+                }
+
+                DirectoryInfo? dir = file.Directory;
+                while (dir != null)
+                {
+                    if (dir.Name.StartsWith("."))
+                    {
+                        return true;
+                    }
+                    dir = dir.Parent;
                 }
 
                 return false;
@@ -35,9 +55,18 @@ namespace Coffer.Services
                     return true;
                 }
 
+                DirectoryInfo? dir = file.Directory;
+                while (dir != null)
+                {
+                    if (dir.Name.StartsWith(".") || dir.Attributes.HasFlag(FileAttributes.Hidden))
+                    {
+                        return true;
+                    }
+                    dir = dir.Parent;
+                }
+
                 return false;
             }
-
             return false;
         }
 
@@ -61,7 +90,7 @@ namespace Coffer.Services
                 file.FullName.StartsWith("/bin/",StringComparison.Ordinal) ||
                 file.FullName.StartsWith("/sbin/", StringComparison.Ordinal) ||
                 file.FullName.StartsWith("/var/", StringComparison.Ordinal)
-                ) 
+                )
             {
               return true;
             }

@@ -18,7 +18,7 @@ namespace Coffer.Services
             return results;
         }
 
-        
+
 
         public static bool ShouldInclude(FileInfo file, FilterConfig filters)
         {
@@ -27,17 +27,17 @@ namespace Coffer.Services
                 return false;
             }
 
-            if (filters.IncludeExtensions.Contains(file.Extension.ToLower()) == false) // Extension inclusion filtering
+            if (filters.IncludeExtensions != null && !filters.IncludeExtensions.Contains(file.Extension.ToLower())) // Extension inclusion filtering
             {
                 return false;
             }
 
-            if (file.Length > filters.MaxSizeMB) // File size limiation in MB
+            if (filters.MaxSizeMB.HasValue && file.Length > filters.MaxSizeMB * 1024 * 1024) // File size limiation in MB
             {
                 return false;
             }
 
-            if (file.Length < filters.MinSizeMB) // File size filtering by minimum MBs
+            if (file.Length < filters.MinSizeMB * 1024 * 1024) // File size filtering by minimum MBs
             {
                 return false;
             }
@@ -83,24 +83,26 @@ namespace Coffer.Services
                 return false;
             }
 
-            if (filters.ModifiedAfter.HasValue && DateTime.Compare(filters.ModifiedAfter.Value, file.LastWriteTime) < 0)
+            // If file last modification date is before the filter date, it will exclude it.
+            if (filters.ModifiedAfter.HasValue && filters.ModifiedAfter.Value > file.LastWriteTime)
             {
-              return false;
+                return false;
             }
 
-            if (filters.ModifiedBefore.HasValue && DateTime.Compare(filters.ModifiedBefore.Value, file.LastWriteTime) > 0)
+            // If file modification date is after the filter date, it will exclude it.
+            if (filters.ModifiedBefore.HasValue && filters.ModifiedBefore.Value < file.LastWriteTime)
             {
-              return false;
+                return false;
             }
 
-            if (filters.CreatedAfter.HasValue && DateTime.Compare(filters.CreatedAfter.Value, file.CreationTime) < 0)
+            if (filters.CreatedAfter.HasValue && filters.CreatedAfter.Value > file.CreationTime)
             {
-              return false;
+                return false;
             }
 
-            if (filters.CreatedBefore.HasValue && DateTime.Compare(filters.CreatedBefore.Value, file.CreationTime) > 0)
+            if (filters.CreatedBefore.HasValue && filters.CreatedBefore.Value < file.CreationTime)
             {
-              return false;
+                return false;
             }
 
             if (filters.ModifiedWithinDays.HasValue)
@@ -109,7 +111,7 @@ namespace Coffer.Services
 
               if (file.LastWriteTime < Cutoff)
               {
-                return false;
+                    return false;
               }
             }
 
@@ -119,7 +121,7 @@ namespace Coffer.Services
 
               if (file.CreationTime < Cutoff)
               {
-                return false;
+                  return false;
               }
             }
 

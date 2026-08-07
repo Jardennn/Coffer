@@ -8,10 +8,10 @@ namespace Coffer.Services.Models
   {
     // Extensions filters
     public List<string> ExcludeExtensions {get; set;} = new() {};
-    public List<string> IncludeExtensions {get; set;} = new() {};
+    public List<string>? IncludeExtensions {get; set;} = null;
 
     // Size filters
-    public long MaxSizeMB {get; set;} = 500;
+    public long? MaxSizeMB {get; set;} = 500; // Nullable to have the option to set unlimited.
     public long MinSizeMB {get; set;} = 0;
 
     // Folders and files filters
@@ -22,7 +22,7 @@ namespace Coffer.Services.Models
     public bool SkipHidden {get; set;} = false;
     public bool SkipReadOnly {get; set;} = false;
     public bool SkipSystemFiles {get; set;} = false;
-    public bool FollowSymlinks {get; set;} = true;
+    public bool FollowSymlinks {get; set;} = false;
 
     // Time and dates filters
     public DateTime? ModifiedAfter {get; set;} = null;
