@@ -44,9 +44,9 @@ namespace Coffer.Services
 
             foreach (var excludedFolder in filters.ExcludeFolders) // Folder filtering (Checking if the given folder is in the full path of the given file)
             {
-                if (file.FullName.Contains(Path.DirectorySeparatorChar + excludedFolder + Path.DirectorySeparatorChar))
+                if (file.FullName.Contains(Path.DirectorySeparatorChar + excludedFolder + Path.DirectorySeparatorChar)) 
                 {
-                    return false;
+                  return false;
                 }
             }
 

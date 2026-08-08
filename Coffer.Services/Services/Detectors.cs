@@ -113,5 +113,36 @@ namespace Coffer.Services
 
           return false;
         }
+
+        public static long GetSizes(string[] srcs, FilterConfig filters)
+        {
+          long totalsize = 0;
+          foreach(var srcstring in srcs)
+          {
+            DirectoryInfo src = new DirectoryInfo(srcstring);
+
+            long size = src.EnumerateFiles("*", SearchOption.AllDirectories).Where(file => Scanner.ShouldInclude(file, filters)).Sum(file => file.Length);
+            totalsize += size;
+          }
+
+          return totalsize;
+        }
+
+        public static long GetFreeSpace(string dst)
+        {
+          string driveroot = Path.GetPathRoot(dst);
+
+          if (!string.IsNullOrEmpty())
+          {
+            DriveInfo drive = new DriveInfo(driveroot);
+            
+            if (drive.IsReady)
+            {
+              long freespace = drive.AvailableFreeSpace;
+            }
+          }
+
+          return freespace;
+        }
     }
 }
