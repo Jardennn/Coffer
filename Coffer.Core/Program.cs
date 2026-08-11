@@ -21,8 +21,40 @@ namespace Coffer.Core
                 MaxSizeMB = null,
             };
 
-            Console.WriteLine("Starting data transfer.");
+            Console.WriteLine("Starting backup.");
             Console.WriteLine("--------------------------------");
+            Console.WriteLine("Starting preflight checks.");
+            var item = PreFlight.Run(srcpaths, dst, filters);
+
+            if (item.warns.Count != 0)
+            {
+                foreach (var warn in item.warns)
+                {
+                    Console.WriteLine($"[WARN] {warn}");
+                }
+
+                Console.WriteLine("Continue anyway? (y/n)");
+                char confirm = Char.Parse(Console.ReadLine());
+
+                if (char.ToLower(confirm) != 'y')
+                {
+                    Console.WriteLine("Backup cancelled.");
+                    Environment.Exit(0);
+                }
+            }
+
+            if (item.errors.Count != 0)
+            {
+                foreach (var error in item.errors)
+                {
+                    Console.WriteLine($"[ERROR] {error}");
+                }
+                Console.WriteLine("Backup cannot proceed, Fix the above errors and try again.");
+                Environment.Exit(1);
+            }
+            Console.WriteLine("\nPreflight checks passed, starting backup...\n");
+            Console.WriteLine("--------------------------------\n");
+
             for (int i = 0; i < srcpaths.Length; i++) // Going through every path in srcpaths
             {
                 string srcpath = srcpaths[i];

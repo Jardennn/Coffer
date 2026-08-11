@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using Coffer.Services.Models;
 
 namespace Coffer.Services
 {
@@ -130,19 +131,38 @@ namespace Coffer.Services
 
         public static long GetFreeSpace(string dst)
         {
-          string driveroot = Path.GetPathRoot(dst);
+            string driveroot = Path.GetPathRoot(dst);
+            long freespace = 0;
 
-          if (!string.IsNullOrEmpty())
-          {
-            DriveInfo drive = new DriveInfo(driveroot);
-            
-            if (drive.IsReady)
+            if (!string.IsNullOrEmpty(driveroot))
             {
-              long freespace = drive.AvailableFreeSpace;
-            }
-          }
+                DriveInfo drive = new DriveInfo(driveroot);
 
-          return freespace;
+                if (drive.IsReady)
+                {
+                    freespace = drive.AvailableFreeSpace;
+                }
+            }
+
+            return freespace;
+        }
+
+        public static int GetFileCount(string[] srcs, FilterConfig filters)
+        {
+            int TotalCount = 0;
+            for (int i = 0; i < srcs.Length; i++)
+            {
+                string src = srcs[i];
+                DirectoryInfo srcDir = new DirectoryInfo(src);
+                var enumeriationOptions = new EnumerationOptions
+                {
+                    IgnoreInaccessible = true,
+                    RecurseSubdirectories = true
+                };
+                int count = srcDir.EnumerateFiles("*", enumeriationOptions).Count(file => Scanner.ShouldInclude(file, filters));
+                TotalCount += count;
+            }
+            return TotalCount;
         }
     }
 }

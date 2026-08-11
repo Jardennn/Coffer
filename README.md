@@ -29,8 +29,8 @@ cd Coffer.Core && dotnet run
 > Points here are representing milestones that were reached but not pushed to `main` or tested.
 
 - [x] Core services and progress reporting (Copier, Verifier, Scanner)
-- [ ] Filters
-- [ ] Preflight checks
+- [x] Filters
+- [x] Preflight checks
 - [ ] Profile save/load
 - [ ] GUI version
 - [ ] Full project complete
