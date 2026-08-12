@@ -140,15 +140,34 @@ namespace Coffer.Services
             return (false, false, "");
         }
 
-    public static (List<string> errors, List<string> warns) Run(string[] srcs, string dst, FilterConfig filters) // Running the actual preflight checks.
+    public static (string valBlock, List<string> errors, List<string> warns) Run(string[] srcs, string dst, FilterConfig filters) // Running the actual preflight checks.
     {
         List<string> errors = new List<string>();
         List<string> warns = new List<string>();
+        string valBlock = "";
+
+        // Validations array - for validating that the given paths actually exist before performing operations on them.
+        (bool, bool, string)[] validations = {
+          SourceExists(srcs),
+          DestExist(dst),
+        };
+
+        foreach (var (valIssue, valError, valMessage) in validations)
+        {
+          if (!valIssue)
+          {
+            continue;
+          }
+
+          if (valIssue)
+          {
+            valBlock = valMessage;
+            return (valBlock, errors, warns);
+          }
+        }
 
         (bool, bool, string)[] checks = {
-            SourceExists(srcs),
             SourceReadable(srcs),
-            DestExist(dst),
             FreeSpace(srcs, dst, filters),
             DestWritable(dst),
             IsSameDrive(srcs, dst),
@@ -173,7 +192,7 @@ namespace Coffer.Services
                 warns.Add(message);
             }
         }
-      return (errors, warns);
+      return (valBlock, errors, warns);
     }
   }
 }

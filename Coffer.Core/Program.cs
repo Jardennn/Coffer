@@ -26,6 +26,13 @@ namespace Coffer.Core
             Console.WriteLine("Starting preflight checks.");
             var item = PreFlight.Run(srcpaths, dst, filters);
 
+            if (item.valBlock != "")
+            {
+              Console.WriteLine($"[ERROR] {item.valBlock}");
+              Console.WriteLine("Source or destination was detected as non existent, fix the above error and try again.");
+              Environment.Exit(1);
+            }
+
             if (item.warns.Count != 0)
             {
                 foreach (var warn in item.warns)
