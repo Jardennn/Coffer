@@ -55,11 +55,16 @@ namespace Coffer.Services
         public static (bool hasIssue, bool isError, string message) FreeSpace(string[] srcs, string dst, FilterConfig filters, int bufferGB = 2) // Checking if there's free space for the backup.
         {
             long needed = Detectors.GetSizes(srcs, filters);
-            long available = Detectors.GetFreeSpace(dst);
+            long? available = Detectors.GetFreeSpace(dst);
 
             if (needed + (bufferGB + Math.Pow(1024, 3)) > available)
             {
-                return (true, true, $"Not enough free space, {needed / 1024 / 1024 / 1024}GB required while only {available / 1024 / 1024 / 1024}GB is available.");
+                return (true, true, $"Not enough free space, {(needed / 1024 / 1024 / 1024) + bufferGB}GB required while only {available / 1024 / 1024 / 1024}GB is available.");
+            }
+
+            if (available == null)
+            {
+                return (true, false, $"Couldn't read available space on destination {dst}, make sure that there is free space on the destination.");
             }
 
             return (false, false, "");
@@ -146,7 +151,7 @@ namespace Coffer.Services
             {
                 string src = srcs[i];
                 DirectoryInfo srcDir = new DirectoryInfo(src);
-                string absDst = dst + Path.DirectorySeparatorChar + srcDir.Name;
+                string absDst = dst + srcDir.Name;
                 if (absDst.Length > 255)
                 {
                     return (true, false, $"Path {absDst} might be too long, might fail on Windows.");
@@ -164,9 +169,9 @@ namespace Coffer.Services
 
             // Validations array - for validating that the given paths actually exist before performing operations on them.
             (bool, bool, string)[] validations = {
-          SourceExists(srcs),
-          DestExist(dst),
-        };
+                SourceExists(srcs),
+                DestExist(dst),
+            };
 
             foreach (var (valIssue, valError, valMessage) in validations)
             {
@@ -182,15 +187,29 @@ namespace Coffer.Services
                 }
             }
 
+            (bool, bool, string)[] permsval = {
+                SourceReadable(srcs),
+                DestWritable(dst),
+            };
+
+            foreach (var (permIssue, permError, permMessage) in permsval)
+            {
+                if (!permIssue)
+                    continue;
+                else
+                {
+                    valBlock = permMessage;
+                    return (valBlock, errors, warns);
+                }
+            }
+
             (bool, bool, string)[] checks = {
-            SourceReadable(srcs),
-            FreeSpace(srcs, dst, filters),
-            DestWritable(dst),
-            IsSameDrive(srcs, dst),
-            IsCaricular(srcs, dst),
-            FileCount(srcs, filters),
-            LongPaths(srcs, dst)
-        };
+                FreeSpace(srcs, dst, filters),
+                IsSameDrive(srcs, dst),
+                IsCaricular(srcs, dst),
+                FileCount(srcs, filters),
+                LongPaths(srcs, dst)
+                };
 
             foreach (var (hasIssue, isError, message) in checks)
             {

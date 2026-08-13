@@ -120,31 +120,64 @@ namespace Coffer.Services
           long totalsize = 0;
           foreach(var srcstring in srcs)
           {
-            DirectoryInfo src = new DirectoryInfo(srcstring);
+                DirectoryInfo src = new DirectoryInfo(srcstring);
 
-            long size = src.EnumerateFiles("*", SearchOption.AllDirectories).Where(file => Scanner.ShouldInclude(file, filters)).Sum(file => file.Length);
+                var enumeriationOptions = new EnumerationOptions
+                {
+                    IgnoreInaccessible = true,
+                    RecurseSubdirectories = true
+                };
+
+                long size = src.EnumerateFiles("*", enumeriationOptions).Where(file => Scanner.ShouldInclude(file, filters)).Sum(file => file.Length);
+
             totalsize += size;
           }
 
           return totalsize;
         }
 
-        public static long GetFreeSpace(string dst)
+        public static long? GetFreeSpace(string dst)
         {
-            string driveroot = Path.GetPathRoot(dst);
-            long freespace = 0;
-
-            if (!string.IsNullOrEmpty(driveroot))
+            if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
             {
-                DriveInfo drive = new DriveInfo(driveroot);
+                long targetDrive = Helpers.OSHelper.GetDeviceID(dst);
 
-                if (drive.IsReady)
+                foreach (var drive in DriveInfo.GetDrives())
                 {
-                    freespace = drive.AvailableFreeSpace;
+                    try
+                    {
+                        if (Helpers.OSHelper.GetDeviceID(drive.RootDirectory.FullName) == targetDrive)
+                        {
+                            return drive.AvailableFreeSpace;
+                        }
+                    }
+
+                    catch (IOException)
+                    {
+                        continue;
+                    }
                 }
             }
 
-            return freespace;
+            else
+            {
+                string driveroot = Path.GetPathRoot(dst);
+                long freespace = 0;
+
+                if (!string.IsNullOrEmpty(driveroot))
+                {
+                    DriveInfo drive = new DriveInfo(driveroot);
+
+                    if (drive.IsReady)
+                    {
+                        Console.WriteLine(drive.AvailableFreeSpace);
+                        freespace = drive.AvailableFreeSpace;
+                    }
+                }
+
+                return freespace;
+            }
+            return null;
         }
 
         public static int GetFileCount(string[] srcs, FilterConfig filters)

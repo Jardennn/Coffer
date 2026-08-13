@@ -28,9 +28,19 @@ namespace Coffer.Core
 
             if (item.valBlock != "")
             {
-              Console.WriteLine($"[ERROR] {item.valBlock}");
-              Console.WriteLine("Source or destination was detected as non existent, fix the above error and try again.");
-              Environment.Exit(1);
+                Console.WriteLine($"[ERROR] {item.valBlock}");
+                Console.WriteLine("There was an error in finding one of the sources/destination or in reading/writing. Fix the above error and try again.");
+                Environment.Exit(1);
+            }
+
+            if (item.errors.Count != 0)
+            {
+                foreach (var error in item.errors)
+                {
+                    Console.WriteLine($"[ERROR] {error}");
+                }
+                Console.WriteLine("Backup cannot proceed, Fix the above errors and try again.");
+                Environment.Exit(1);
             }
 
             if (item.warns.Count != 0)
@@ -48,16 +58,6 @@ namespace Coffer.Core
                     Console.WriteLine("Backup cancelled.");
                     Environment.Exit(0);
                 }
-            }
-
-            if (item.errors.Count != 0)
-            {
-                foreach (var error in item.errors)
-                {
-                    Console.WriteLine($"[ERROR] {error}");
-                }
-                Console.WriteLine("Backup cannot proceed, Fix the above errors and try again.");
-                Environment.Exit(1);
             }
             Console.WriteLine("\nPreflight checks passed, starting backup...\n");
             Console.WriteLine("--------------------------------\n");

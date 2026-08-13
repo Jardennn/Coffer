@@ -11,7 +11,13 @@ namespace Coffer.Services
             var results = new List<FileInfo>();
             var root = new DirectoryInfo(srcRoot);
 
-            foreach (var file in root.EnumerateFiles("*", SearchOption.AllDirectories))
+            var enumeriationOptions = new EnumerationOptions
+            {
+                IgnoreInaccessible = true,
+                RecurseSubdirectories = true
+            };
+
+            foreach (var file in root.EnumerateFiles("*", enumeriationOptions))
             {
                 results.Add(file);
             }
@@ -44,7 +50,7 @@ namespace Coffer.Services
 
             foreach (var excludedFolder in filters.ExcludeFolders) // Folder filtering (Checking if the given folder is in the full path of the given file)
             {
-                if (file.FullName.Contains(Path.DirectorySeparatorChar + excludedFolder + Path.DirectorySeparatorChar)) 
+                if (file.FullName.Contains(Path.DirectorySeparatorChar + excludedFolder + Path.DirectorySeparatorChar))
                 {
                   return false;
                 }
