@@ -1,96 +1,112 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using Coffer.Services.Models;
+using Coffer.Services.Helpers;
 
 namespace Coffer.Services
 {
-  public class PreFlight
-  {
-
-    public static (bool hasIssue, bool isError, string message) SourceExists(string[] srcs) // Checking if passed sources exist.
+    public class PreFlight
     {
-      foreach (var src in srcs)
-      {
-        if (!Directory.Exists(src))
+        public static (bool hasIssue, bool isError, string message) SourceExists(string[] srcs) // Checking if passed sources exist.
         {
-          return (true, true, $"Source: {src} was not found.");
-        }
-      }
+            foreach (var src in srcs)
+            {
+                if (!Directory.Exists(src))
+                {
+                    return (true, true, $"Source: {src} was not found.");
+                }
+            }
 
-      return (false, false, "");
-    }
-
-    public static (bool hasIssue, bool isError, string message) SourceReadable(string[] srcs) // Checking if passed sources are readable.
-    {
-      foreach (var src in srcs)
-      {
-        try
-        {
-          Directory.EnumerateFileSystemEntries(src).FirstOrDefault();
-        }
-        catch (UnauthorizedAccessException)
-        {
-            return (true, true, $"No read permissions for {src}");
-        }
-        catch (Exception)
-        {
-            return (true, true, $"Unexpected error was encountered checking {src} for read permissions.");
-        }
-      }
-
-      return (false, false, "");
-    }
-
-    public static (bool hasIssue, bool isError, string message) DestExist(string dst) // Checking if the destination exists.
-    {
-      if (!Directory.Exists(dst))
-      {
-          return (true, true, $"Destination: {dst} was not found.");
-      }
-
-      return (false, false, "");
-    }
-
-    public static (bool hasIssue, bool isError, string message) FreeSpace(string[] srcs, string dst, FilterConfig filters, int bufferGB = 2) // Checking if there's free space for the backup.
-    {
-      long needed = Detectors.GetSizes(srcs, filters);
-      long available = Detectors.GetFreeSpace(dst);
-
-      if (needed + (bufferGB + Math.Pow(1024, 3)) > available)
-      {
-          return (true, true, $"Not enough free space, {needed / 1024 / 1024 / 1024}GB required while only {available / 1024 / 1024 / 1024}GB is available.");
-      }
-
-      return (false, false, "");
-    }
-
-    public static (bool hasIssue, bool isError, string message) DestWritable(string dst) // Checking if the destination is writable.
-    {
-        string testfile = dst + Path.DirectorySeparatorChar + ".coffertest"; // Making a test file in the destination.
-        try
-        {
-            File.WriteAllText(testfile, "test");
-            File.Delete(testfile);
-        }
-        catch (UnauthorizedAccessException)
-        {
-            return (true, true, "Destination is not writeable.");
+            return (false, false, "");
         }
 
-        return (false, false, "");
-    }
+        public static (bool hasIssue, bool isError, string message) SourceReadable(string[] srcs) // Checking if passed sources are readable.
+        {
+            foreach (var src in srcs)
+            {
+                try
+                {
+                    Directory.EnumerateFileSystemEntries(src).FirstOrDefault();
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    return (true, true, $"No read permissions for {src}");
+                }
+                catch (Exception)
+                {
+                    return (true, true, $"Unexpected error was encountered checking {src} for read permissions.");
+                }
+            }
+
+            return (false, false, "");
+        }
+
+        public static (bool hasIssue, bool isError, string message) DestExist(string dst) // Checking if the destination exists.
+        {
+            if (!Directory.Exists(dst))
+            {
+                return (true, true, $"Destination: {dst} was not found.");
+            }
+
+            return (false, false, "");
+        }
+
+        public static (bool hasIssue, bool isError, string message) FreeSpace(string[] srcs, string dst, FilterConfig filters, int bufferGB = 2) // Checking if there's free space for the backup.
+        {
+            long needed = Detectors.GetSizes(srcs, filters);
+            long available = Detectors.GetFreeSpace(dst);
+
+            if (needed + (bufferGB + Math.Pow(1024, 3)) > available)
+            {
+                return (true, true, $"Not enough free space, {needed / 1024 / 1024 / 1024}GB required while only {available / 1024 / 1024 / 1024}GB is available.");
+            }
+
+            return (false, false, "");
+        }
+
+        public static (bool hasIssue, bool isError, string message) DestWritable(string dst) // Checking if the destination is writable.
+        {
+            string testfile = dst + Path.DirectorySeparatorChar + ".coffertest"; // Making a test file in the destination.
+            try
+            {
+                File.WriteAllText(testfile, "test");
+                File.Delete(testfile);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return (true, true, "Destination is not writeable.");
+            }
+
+            return (false, false, "");
+        }
 
         public static (bool hasIssue, bool isError, string message) IsSameDrive(string[] srcs, string dst) // Checking for if a source and the destination are on the same drive.
         {
-            DriveInfo dstDrive = new DriveInfo(dst);
-            for (int i = 0; i < srcs.Length; i++)
+            if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
             {
-                string src = srcs[i];
-                DriveInfo srcDrive = new DriveInfo(src);
-
-                if (string.Equals(dstDrive.Name, srcDrive.Name, StringComparison.OrdinalIgnoreCase))
+                long dstID = Helpers.OSHelper.GetDeviceID(dst);
+                for (int i = 0; i < srcs.Length; i++)
                 {
-                    return (true, false, $"Source {src} and destination {dst} are on the same physical drive.");
+                    string src = srcs[i];
+                    if (Helpers.OSHelper.GetDeviceID(src) == dstID)
+                    {
+                        return (true, false, $"Source {src} and destination {dst} are on the same physical drive.");
+                    }
+                }
+            }
+
+            else
+            {
+                string dstRoot = Path.GetPathRoot(dst) ?? "";
+                for (int i = 0; i < srcs.Length; i++)
+                {
+                    string src = srcs[i];
+                    string srcRoot = Path.GetPathRoot(src) ?? "";
+                    if (string.Equals(dstRoot, srcRoot, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (true, false, $"Source {src} and destination {dst} are on the same physical drive.");
+                    }
                 }
             }
 
@@ -140,33 +156,33 @@ namespace Coffer.Services
             return (false, false, "");
         }
 
-    public static (string valBlock, List<string> errors, List<string> warns) Run(string[] srcs, string dst, FilterConfig filters) // Running the actual preflight checks.
-    {
-        List<string> errors = new List<string>();
-        List<string> warns = new List<string>();
-        string valBlock = "";
+        public static (string valBlock, List<string> errors, List<string> warns) Run(string[] srcs, string dst, FilterConfig filters) // Running the actual preflight checks.
+        {
+            List<string> errors = new List<string>();
+            List<string> warns = new List<string>();
+            string valBlock = "";
 
-        // Validations array - for validating that the given paths actually exist before performing operations on them.
-        (bool, bool, string)[] validations = {
+            // Validations array - for validating that the given paths actually exist before performing operations on them.
+            (bool, bool, string)[] validations = {
           SourceExists(srcs),
           DestExist(dst),
         };
 
-        foreach (var (valIssue, valError, valMessage) in validations)
-        {
-          if (!valIssue)
-          {
-            continue;
-          }
+            foreach (var (valIssue, valError, valMessage) in validations)
+            {
+                if (!valIssue)
+                {
+                    continue;
+                }
 
-          if (valIssue)
-          {
-            valBlock = valMessage;
-            return (valBlock, errors, warns);
-          }
-        }
+                if (valIssue)
+                {
+                    valBlock = valMessage;
+                    return (valBlock, errors, warns);
+                }
+            }
 
-        (bool, bool, string)[] checks = {
+            (bool, bool, string)[] checks = {
             SourceReadable(srcs),
             FreeSpace(srcs, dst, filters),
             DestWritable(dst),
@@ -176,23 +192,23 @@ namespace Coffer.Services
             LongPaths(srcs, dst)
         };
 
-        foreach (var (hasIssue, isError, message) in checks)
-        {
-            if (!hasIssue)
+            foreach (var (hasIssue, isError, message) in checks)
             {
-                continue;
-            }
+                if (!hasIssue)
+                {
+                    continue;
+                }
 
-            if (isError)
-            {
-                errors.Add(message);
+                if (isError)
+                {
+                    errors.Add(message);
+                }
+                else
+                {
+                    warns.Add(message);
+                }
             }
-            else
-            {
-                warns.Add(message);
-            }
+            return (valBlock, errors, warns);
         }
-      return (valBlock, errors, warns);
     }
-  }
 }
