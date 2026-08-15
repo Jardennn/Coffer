@@ -118,19 +118,11 @@ namespace Coffer.Services
         public static long GetSizes(string[] srcs, FilterConfig filters)
         {
           long totalsize = 0;
-          foreach(var srcstring in srcs)
+          for (int i = 0; i < srcs.Length; i++)
           {
-                DirectoryInfo src = new DirectoryInfo(srcstring);
-
-                var enumeriationOptions = new EnumerationOptions
-                {
-                    IgnoreInaccessible = true,
-                    RecurseSubdirectories = true
-                };
-
-                long size = src.EnumerateFiles("*", enumeriationOptions).Where(file => Scanner.ShouldInclude(file, filters)).Sum(file => file.Length);
-
-            totalsize += size;
+                string src = srcs[i];
+                long size = Scanner.Scan(src, filters).Sum(file => file.Length);
+                totalsize += size;
           }
 
           return totalsize;
@@ -161,7 +153,7 @@ namespace Coffer.Services
 
             else
             {
-                string driveroot = Path.GetPathRoot(dst);
+                string? driveroot = Path.GetPathRoot(dst);
                 long freespace = 0;
 
                 if (!string.IsNullOrEmpty(driveroot))
@@ -186,13 +178,8 @@ namespace Coffer.Services
             for (int i = 0; i < srcs.Length; i++)
             {
                 string src = srcs[i];
-                DirectoryInfo srcDir = new DirectoryInfo(src);
-                var enumeriationOptions = new EnumerationOptions
-                {
-                    IgnoreInaccessible = true,
-                    RecurseSubdirectories = true
-                };
-                int count = srcDir.EnumerateFiles("*", enumeriationOptions).Count(file => Scanner.ShouldInclude(file, filters));
+
+                int count = Scanner.Scan(src, filters).Count;
                 TotalCount += count;
             }
             return TotalCount;

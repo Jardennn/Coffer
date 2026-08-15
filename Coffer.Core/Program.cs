@@ -51,12 +51,22 @@ namespace Coffer.Core
                 }
 
                 Console.WriteLine("Continue anyway? (y/n)");
-                char confirm = Char.Parse(Console.ReadLine());
+                char confirm = Char.Parse(Console.ReadLine() ?? " ");
 
-                if (char.ToLower(confirm) != 'y')
+                while (true)
                 {
-                    Console.WriteLine("Backup cancelled.");
-                    Environment.Exit(0);
+                    if (char.ToLower(confirm) == 'n')
+                    {
+                        Console.WriteLine("Backup cancelled.");
+                        Environment.Exit(0);
+                    }
+                    else if (char.ToLower(confirm) == 'y')
+                    {
+                        break;
+                    }
+                    Console.WriteLine("Input was invalid, try again");
+                    Console.WriteLine("Continue anyway? (y/n)");
+                    confirm = Char.Parse(Console.ReadLine() ?? " ");
                 }
             }
             Console.WriteLine("\nPreflight checks passed, starting backup...\n");
@@ -65,7 +75,7 @@ namespace Coffer.Core
             for (int i = 0; i < srcpaths.Length; i++) // Going through every path in srcpaths
             {
                 string srcpath = srcpaths[i];
-                List<FileInfo> filepaths = Scanner.Scan(srcpath);
+                List<FileInfo> filepaths = Scanner.Scan(srcpath, filters);
 
                 if (filepaths.Count == 0)
                 {
@@ -75,8 +85,6 @@ namespace Coffer.Core
 
                 foreach (var filepath in filepaths)
                 {
-                    if (Scanner.ShouldInclude(filepath, filters))
-                    {
                         string filepathstr = filepath.FullName;
                         string dstpath = GetDest.GetDestPath(srcpath, filepathstr, dst);
 
@@ -111,7 +119,6 @@ namespace Coffer.Core
                             Console.WriteLine("✗ FAILED — checksum mismatch");
 
                         Console.Write("\n--------------------------------\n");
-                    }
                 }
             }
             Console.WriteLine("--------------------------------");

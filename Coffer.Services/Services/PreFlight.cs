@@ -90,11 +90,11 @@ namespace Coffer.Services
         {
             if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
             {
-                long dstID = Helpers.OSHelper.GetDeviceID(dst);
+                long dstID = OSHelper.GetDeviceID(dst);
                 for (int i = 0; i < srcs.Length; i++)
                 {
                     string src = srcs[i];
-                    if (Helpers.OSHelper.GetDeviceID(src) == dstID)
+                    if (OSHelper.GetDeviceID(src) == dstID)
                     {
                         return (true, false, $"Source {src} and destination {dst} are on the same physical drive.");
                     }
