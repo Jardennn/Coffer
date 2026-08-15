@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using Coffer.Services.Models;
 
 namespace Coffer.Services
 {
@@ -112,6 +113,76 @@ namespace Coffer.Services
           }
 
           return false;
+        }
+
+        public static long GetSizes(string[] srcs, FilterConfig filters)
+        {
+          long totalsize = 0;
+          for (int i = 0; i < srcs.Length; i++)
+          {
+                string src = srcs[i];
+                long size = Scanner.Scan(src, filters).Sum(file => file.Length);
+                totalsize += size;
+          }
+
+          return totalsize;
+        }
+
+        public static long? GetFreeSpace(string dst)
+        {
+            if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
+            {
+                long targetDrive = Helpers.OSHelper.GetDeviceID(dst);
+
+                foreach (var drive in DriveInfo.GetDrives())
+                {
+                    try
+                    {
+                        if (Helpers.OSHelper.GetDeviceID(drive.RootDirectory.FullName) == targetDrive)
+                        {
+                            return drive.AvailableFreeSpace;
+                        }
+                    }
+
+                    catch (IOException)
+                    {
+                        continue;
+                    }
+                }
+            }
+
+            else
+            {
+                string? driveroot = Path.GetPathRoot(dst);
+                long freespace = 0;
+
+                if (!string.IsNullOrEmpty(driveroot))
+                {
+                    DriveInfo drive = new DriveInfo(driveroot);
+
+                    if (drive.IsReady)
+                    {
+                        Console.WriteLine(drive.AvailableFreeSpace);
+                        freespace = drive.AvailableFreeSpace;
+                    }
+                }
+
+                return freespace;
+            }
+            return null;
+        }
+
+        public static int GetFileCount(string[] srcs, FilterConfig filters)
+        {
+            int TotalCount = 0;
+            for (int i = 0; i < srcs.Length; i++)
+            {
+                string src = srcs[i];
+
+                int count = Scanner.Scan(src, filters).Count;
+                TotalCount += count;
+            }
+            return TotalCount;
         }
     }
 }

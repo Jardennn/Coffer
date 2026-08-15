@@ -6,12 +6,18 @@ namespace Coffer.Services
 {
     public class Scanner
     {
-        public static List<FileInfo> Scan(string srcRoot)
+        public static List<FileInfo> Scan(string srcRoot, FilterConfig filters)
         {
             var results = new List<FileInfo>();
             var root = new DirectoryInfo(srcRoot);
 
-            foreach (var file in root.EnumerateFiles("*", SearchOption.AllDirectories))
+            var enumeriationOptions = new EnumerationOptions
+            {
+                IgnoreInaccessible = true,
+                RecurseSubdirectories = true
+            };
+
+            foreach (var file in root.EnumerateFiles("*", enumeriationOptions).Where(file => Scanner.ShouldInclude(file, filters)))
             {
                 results.Add(file);
             }
@@ -20,7 +26,8 @@ namespace Coffer.Services
 
 
 
-        public static bool ShouldInclude(FileInfo file, FilterConfig filters)
+
+        private static bool ShouldInclude(FileInfo file, FilterConfig filters)
         {
             if (filters.ExcludeExtensions.Contains(file.Extension.ToLower())) // Extension exclusion filtering
             {
