@@ -8,7 +8,7 @@ namespace Coffer.Services
 {
     public class PreFlight
     {
-        public static (bool hasIssue, bool isError, string message) SourceExists(string[] srcs) // Checking if passed sources exist.
+        public static (bool hasIssue, bool isError, string message) SourceExists(List<string> srcs) // Checking if passed sources exist.
         {
             foreach (var src in srcs)
             {
@@ -21,7 +21,7 @@ namespace Coffer.Services
             return (false, false, "");
         }
 
-        public static (bool hasIssue, bool isError, string message) SourceReadable(string[] srcs) // Checking if passed sources are readable.
+        public static (bool hasIssue, bool isError, string message) SourceReadable(List<string> srcs) // Checking if passed sources are readable.
         {
             foreach (var src in srcs)
             {
@@ -52,7 +52,7 @@ namespace Coffer.Services
             return (false, false, "");
         }
 
-        public static (bool hasIssue, bool isError, string message) FreeSpace(string[] srcs, string dst, FilterConfig filters, int bufferGB = 2) // Checking if there's free space for the backup.
+        public static (bool hasIssue, bool isError, string message) FreeSpace(List<string> srcs, string dst, FilterConfig filters, int bufferGB = 2) // Checking if there's free space for the backup.
         {
             long needed = Detectors.GetSizes(srcs, filters);
             long? available = Detectors.GetFreeSpace(dst);
@@ -86,14 +86,13 @@ namespace Coffer.Services
             return (false, false, "");
         }
 
-        public static (bool hasIssue, bool isError, string message) IsSameDrive(string[] srcs, string dst) // Checking for if a source and the destination are on the same drive.
+        public static (bool hasIssue, bool isError, string message) IsSameDrive(List<string> srcs, string dst) // Checking for if a source and the destination are on the same drive.
         {
             if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
             {
                 long dstID = OSHelper.GetDeviceID(dst);
-                for (int i = 0; i < srcs.Length; i++)
+                foreach (string src in srcs)
                 {
-                    string src = srcs[i];
                     if (OSHelper.GetDeviceID(src) == dstID)
                     {
                         return (true, false, $"Source {src} and destination {dst} are on the same physical drive.");
@@ -104,9 +103,8 @@ namespace Coffer.Services
             else
             {
                 string dstRoot = Path.GetPathRoot(dst) ?? "";
-                for (int i = 0; i < srcs.Length; i++)
+                foreach (string src in srcs)
                 {
-                    string src = srcs[i];
                     string srcRoot = Path.GetPathRoot(src) ?? "";
                     if (string.Equals(dstRoot, srcRoot, StringComparison.OrdinalIgnoreCase))
                     {
@@ -118,11 +116,10 @@ namespace Coffer.Services
             return (false, false, "");
         }
 
-        public static (bool hasIssue, bool isError, string message) IsCaricular(string[] srcs, string dst) // Checking if the destination is placed inside one of the given sources.
+        public static (bool hasIssue, bool isError, string message) IsCaricular(List<string> srcs, string dst) // Checking if the destination is placed inside one of the given sources.
         {
-            for (int i = 0; i < srcs.Length; i++)
+            foreach (string src in srcs)
             {
-                string src = srcs[i];
                 string relative = Path.GetRelativePath(src, dst);
 
                 if (!relative.StartsWith("..") && !Path.IsPathFullyQualified(relative))
@@ -134,7 +131,7 @@ namespace Coffer.Services
             return (false, false, "");
         }
 
-        public static (bool hasIssue, bool isError, string message) FileCount(string[] srcs, FilterConfig filters, int warn_threshold = 50000) // Checking for file count in the sources.
+        public static (bool hasIssue, bool isError, string message) FileCount(List<string> srcs, FilterConfig filters, int warn_threshold = 50000) // Checking for file count in the sources.
         {
             int count = Detectors.GetFileCount(srcs, filters);
             if (count > warn_threshold)
@@ -145,11 +142,10 @@ namespace Coffer.Services
             return (false, false, "");
         }
 
-        public static (bool hasIssue, bool isError, string message) LongPaths(string[] srcs, string dst) // Checking for long paths (not really up to date with how the program gets the destination path.).
+        public static (bool hasIssue, bool isError, string message) LongPaths(List<string> srcs, string dst) // Checking for long paths (not really up to date with how the program gets the destination path.).
         {
-            for (int i = 0; i < srcs.Length; i++)
+            foreach (string src in srcs)
             {
-                string src = srcs[i];
                 DirectoryInfo srcDir = new DirectoryInfo(src);
                 string absDst = dst + srcDir.Name;
                 if (absDst.Length > 255)
@@ -161,7 +157,7 @@ namespace Coffer.Services
             return (false, false, "");
         }
 
-        public static (string valBlock, List<string> errors, List<string> warns) Run(string[] srcs, string dst, FilterConfig filters) // Running the actual preflight checks.
+        public static (string valBlock, List<string> errors, List<string> warns) Run(List<string> srcs, string dst, FilterConfig filters) // Running the actual preflight checks.
         {
             List<string> errors = new List<string>();
             List<string> warns = new List<string>();

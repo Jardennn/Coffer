@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Coffer.Services.Models
 {
-  public class FilterConfig
+  public class FilterConfig 
   {
     // Extensions filters
     public List<string> ExcludeExtensions {get; set;} = new() {};

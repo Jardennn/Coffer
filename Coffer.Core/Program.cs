@@ -11,15 +11,13 @@ namespace Coffer.Core
         {
 
             // Now instead of putting your absolute paths in an array you need to put your root source paths in an array and root destination path in a single string.
-            string[] srcpaths = ["/path/to/root/source/"];
-            string dst = "/path/to/root/destination/";
+          //  string[] srcpaths = ["/path/to/root/source/"];
+          //  string dst = "/path/to/root/destination/";
 
-            FilterConfig filters = new FilterConfig
-            {
-                // Custom filters go here in this format:
-                // ExcludeExtensions = new() {".ext"},
-                MaxSizeMB = null,
-            };
+            BackupProfile profile = ProfileService.load();
+            FilterConfig filters = profile.Filters;
+            List<string> srcpaths = profile.SourcePaths;
+            string dst = profile.DestinationPath;
 
             Console.WriteLine("Starting backup.");
             Console.WriteLine("--------------------------------");
@@ -72,9 +70,9 @@ namespace Coffer.Core
             Console.WriteLine("\nPreflight checks passed, starting backup...\n");
             Console.WriteLine("--------------------------------\n");
 
-            for (int i = 0; i < srcpaths.Length; i++) // Going through every path in srcpaths
+            foreach (string srcpath in srcpaths) // Going through every path in srcpaths
             {
-                string srcpath = srcpaths[i];
+               // string srcpath = srcpaths[i];
                 List<FileInfo> filepaths = Scanner.Scan(srcpath, filters);
 
                 if (filepaths.Count == 0)

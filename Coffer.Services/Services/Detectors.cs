@@ -115,12 +115,11 @@ namespace Coffer.Services
           return false;
         }
 
-        public static long GetSizes(string[] srcs, FilterConfig filters)
+        public static long GetSizes(List<string> srcs, FilterConfig filters)
         {
           long totalsize = 0;
-          for (int i = 0; i < srcs.Length; i++)
+          foreach (string src in srcs)
           {
-                string src = srcs[i];
                 long size = Scanner.Scan(src, filters).Sum(file => file.Length);
                 totalsize += size;
           }
@@ -172,13 +171,11 @@ namespace Coffer.Services
             return null;
         }
 
-        public static int GetFileCount(string[] srcs, FilterConfig filters)
+        public static int GetFileCount(List<string> srcs, FilterConfig filters)
         {
             int TotalCount = 0;
-            for (int i = 0; i < srcs.Length; i++)
+            foreach (string src in srcs)
             {
-                string src = srcs[i];
-
                 int count = Scanner.Scan(src, filters).Count;
                 TotalCount += count;
             }
