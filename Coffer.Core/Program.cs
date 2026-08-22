@@ -9,12 +9,48 @@ namespace Coffer.Core
     {
         static void Main(String[] args)
         {
+            BackupProfile profile = ProfileService.Load(ProfileService.GetActiveProfile());
 
-            // Now instead of putting your absolute paths in an array you need to put your root source paths in an array and root destination path in a single string.
-          //  string[] srcpaths = ["/path/to/root/source/"];
-          //  string dst = "/path/to/root/destination/";
+            string? profileSwitch = ArgumentParser.GetProfileName(args);
+            if (profileSwitch != null && profileSwitch != ProfileService.GetActiveProfile())
+            {
+                ProfileService.SetActiveProfile(profileSwitch);
+                profile = ProfileService.Load(profileSwitch);
+                Console.WriteLine($"Switched to profile: {profileSwitch}");
+                return;
+            }
 
-            BackupProfile profile = ProfileService.load();
+            bool modified = ArgumentParser.ApplyModify(args, profile);
+            if (modified)
+            {
+                ProfileService.Save(profile);
+                Console.WriteLine("Profile updated.");
+                return;
+            }
+
+            var action = ArgumentParser.GetAction(args);
+            switch (action)
+            {
+                case ArgumentParser.Action.Run:
+                    RunBackup(profile);
+                    break;
+                case ArgumentParser.Action.Status:
+                    // Print status function here (PrintStatus(profile))
+                    break;
+                case ArgumentParser.Action.Help:
+                    ArgumentParser.PrintHelp();
+                    break;
+                case ArgumentParser.Action.ListProfiles:
+                    ProfileService.ListProfiles();
+                    break;
+                case null:
+                    // default print here (would be either the status or help command.)
+                    break;
+            }
+        }
+
+        static void RunBackup(BackupProfile profile)
+        {
             FilterConfig filters = profile.Filters;
             List<string> srcpaths = profile.SourcePaths;
             string dst = profile.DestinationPath;
@@ -72,7 +108,7 @@ namespace Coffer.Core
 
             foreach (string srcpath in srcpaths) // Going through every path in srcpaths
             {
-               // string srcpath = srcpaths[i];
+                // string srcpath = srcpaths[i];
                 List<FileInfo> filepaths = Scanner.Scan(srcpath, filters);
 
                 if (filepaths.Count == 0)
@@ -83,40 +119,40 @@ namespace Coffer.Core
 
                 foreach (var filepath in filepaths)
                 {
-                        string filepathstr = filepath.FullName;
-                        string dstpath = GetDest.GetDestPath(srcpath, filepathstr, dst);
+                    string filepathstr = filepath.FullName;
+                    string dstpath = GetDest.GetDestPath(srcpath, filepathstr, dst);
 
-                        Directory.CreateDirectory(Path.GetDirectoryName(dstpath)!); // Creates a directory in the same name of a directory that contains a nested source file.
+                    Directory.CreateDirectory(Path.GetDirectoryName(dstpath)!); // Creates a directory in the same name of a directory that contains a nested source file.
 
-                        Console.WriteLine($"Beginning data transfer for: {filepathstr}");
-                        string srchash = Copier.CopyFile(filepathstr, dstpath, 4, onProgress: (copied, total) => // Using lambda to pass onProgress as a function that will take 'copied' and 'total' as arguments.
-                        {
-                            int percent = (int)Math.Clamp((double)copied / total * 100, 0, 100); // Percentage calculation for how much of the file was copied. Math.Clamp is for limiting the bar to be within 0 to 100, to prevent crashes.
-                            int filled = percent / 2; // Making the progress bar 50 characters wide
-                            string bar = new string('█', filled) + new string('░', 50 - filled); // Two strings are combined to make the progress bar, the filled blocks are in the same length as 'filled' that changes dynamically and the empty blocks are the full length of the bar (50) - the filled blocks (filled variable).
-                            Console.Write($"\r [{bar}] {percent}% {copied / 1024 / 1024}MB / {total / 1024 / 1024}MB"); // Output of the progress bar, \r moves the console back to the beginning of the line for updating the progress bar.
-                        });
-                        Console.WriteLine();
+                    Console.WriteLine($"Beginning data transfer for: {filepathstr}");
+                    string srchash = Copier.CopyFile(filepathstr, dstpath, 4, onProgress: (copied, total) => // Using lambda to pass onProgress as a function that will take 'copied' and 'total' as arguments.
+                    {
+                        int percent = (int)Math.Clamp((double)copied / total * 100, 0, 100); // Percentage calculation for how much of the file was copied. Math.Clamp is for limiting the bar to be within 0 to 100, to prevent crashes.
+                        int filled = percent / 2; // Making the progress bar 50 characters wide
+                        string bar = new string('█', filled) + new string('░', 50 - filled); // Two strings are combined to make the progress bar, the filled blocks are in the same length as 'filled' that changes dynamically and the empty blocks are the full length of the bar (50) - the filled blocks (filled variable).
+                        Console.Write($"\r [{bar}] {percent}% {copied / 1024 / 1024}MB / {total / 1024 / 1024}MB"); // Output of the progress bar, \r moves the console back to the beginning of the line for updating the progress bar.
+                    });
+                    Console.WriteLine();
 
-                        Console.WriteLine("\nTransfer complete, beginning hash verficiation."); // I added a progress bar to show to progress of data being appended to the hash for verification. For working with large files.
-                        bool verification = Verifier.Verify(srchash, dstpath, 4, onProgress: (appended, total) =>
-                        {
-                            int percent = (int)Math.Clamp((double)appended / total * 100, 0, 100);
-                            int filled = percent / 2;
-                            string bar = new string('█', filled) + new string('░', 50 - filled);
-                            Console.Write($"\r [{bar}] {percent}%");
-                        });
-                        Console.WriteLine();
-                        Console.WriteLine();
+                    Console.WriteLine("\nTransfer complete, beginning hash verficiation."); // I added a progress bar to show to progress of data being appended to the hash for verification. For working with large files.
+                    bool verification = Verifier.Verify(srchash, dstpath, 4, onProgress: (appended, total) =>
+                    {
+                        int percent = (int)Math.Clamp((double)appended / total * 100, 0, 100);
+                        int filled = percent / 2;
+                        string bar = new string('█', filled) + new string('░', 50 - filled);
+                        Console.Write($"\r [{bar}] {percent}%");
+                    });
+                    Console.WriteLine();
+                    Console.WriteLine();
 
-                        if (verification)
-                        {
-                            Console.WriteLine("✓ OK");
-                        }
-                        else
-                            Console.WriteLine("✗ FAILED — checksum mismatch");
+                    if (verification)
+                    {
+                        Console.WriteLine("✓ OK");
+                    }
+                    else
+                        Console.WriteLine("✗ FAILED — checksum mismatch");
 
-                        Console.Write("\n--------------------------------\n");
+                    Console.Write("\n--------------------------------\n");
                 }
             }
             Console.WriteLine("--------------------------------");
