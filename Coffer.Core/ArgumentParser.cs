@@ -183,9 +183,19 @@ namespace Coffer.Core
             Console.WriteLine("Usage: coffer [options]");
             Console.WriteLine();
             Console.WriteLine("Options:");
+            Console.WriteLine("   --profile <profile name>  "); 
             Console.WriteLine("   --source <path>           Add a source path to the list on the config");
             Console.WriteLine("   --destination <path>      Set a destination path for the copy");
             Console.WriteLine("   --help                    Show this message");
+            Console.WriteLine();
+            Console.WriteLine("Actions - interaction with the program.");
+            Console.WriteLine("   --run                     Run the backup");
+            Console.WriteLine("   --status                  Print the status of the current loaded profile");
+            Console.WriteLine("   --list-profiles           List the saved available profiles");
+            Console.WriteLine();
+            Console.WriteLine("Filters - Configurating filters for the profile config.");
+            Console.WriteLine("   --exclude-ext <extensions> Add extensions to exclude onto ExcludeExtensions filter (e.g. .txt)");
+            Console.WriteLine("   --include-ext <extensions> Add extensions to include onto IncludeExtensions filter (e.g. .txt)");
         }
     }
 }

@@ -36,6 +36,7 @@ namespace Coffer.Core
                     break;
                 case ArgumentParser.Action.Status:
                     // Print status function here (PrintStatus(profile))
+                    PrintStatus(profile);
                     break;
                 case ArgumentParser.Action.Help:
                     ArgumentParser.PrintHelp();
@@ -44,7 +45,7 @@ namespace Coffer.Core
                     ProfileService.ListProfiles();
                     break;
                 case null:
-                    // default print here (would be either the status or help command.)
+                    ArgumentParser.PrintHelp();
                     break;
             }
         }
@@ -157,6 +158,145 @@ namespace Coffer.Core
             }
             Console.WriteLine("--------------------------------");
             Console.WriteLine("Backup complete.");
+        }
+
+        static void PrintStatus(BackupProfile profile)
+        {
+          Console.WriteLine("Coffer profile status");
+          Console.WriteLine();
+          Console.WriteLine($"Currently loaded/active status: {ProfileService.GetActiveProfile()}");
+          Console.WriteLine();
+          
+          if (profile.SourcePaths.Count == 0)
+          {
+            Console.WriteLine("No sources have been set yet.");
+          }
+          
+          else
+          {
+            Console.WriteLine("Sources:");
+            foreach (string source in profile.SourcePaths)
+            {
+              Console.WriteLine($"     * {source}");
+            }
+          }
+          
+          Console.WriteLine();
+
+          if (string.IsNullOrWhiteSpace(profile.DestinationPath))
+          {
+            Console.WriteLine("Destination not set yet.");
+          }
+          else
+          {
+            Console.WriteLine($"Destination: {profile.DestinationPath}");
+          }
+          
+          Console.WriteLine();
+
+          Console.WriteLine("Active filters:");
+          bool anyFilterChanges = false;
+          BackupProfile defaults = new BackupProfile();
+
+          if (profile.Filters.ExcludeExtensions != defaults.Filters.ExcludeExtensions && profile.Filters.ExcludeExtensions?.Count > 0)
+          {
+            Console.WriteLine($"Excluded Extensions: {string.Join(", ", profile.Filters.ExcludeExtensions)}");
+            anyFilterChanges = true;
+          }
+
+          if (profile.Filters.IncludeExtensions?.Count > 0)
+          {
+            Console.WriteLine($"Included Extensions: {string.Join(", ", profile.Filters.IncludeExtensions)}");
+            anyFilterChanges = true;
+          }
+
+          if (profile.Filters.MaxSizeMB != defaults.Filters.MaxSizeMB)
+          {
+            Console.WriteLine($"Max size for file: {profile.Filters.MaxSizeMB}MB");
+            anyFilterChanges = true;
+          }
+
+          if (profile.Filters.MinSizeMB != defaults.Filters.MinSizeMB)
+          {
+            Console.WriteLine($"Min size for file: {profile.Filters.MinSizeMB}MB");
+            anyFilterChanges = true;
+          }
+
+          if (profile.Filters.ExcludeFolders != defaults.Filters.ExcludeFolders && profile.Filters.ExcludeFolders?.Count > 0)
+          {
+            Console.WriteLine($"Excluded folder names: {string.Join(", ", profile.Filters.ExcludeFolders)}");
+            anyFilterChanges = true;
+          }
+
+          if (profile.Filters.ExcludePaths != defaults.Filters.ExcludePaths && profile.Filters.ExcludePaths?.Count > 0)
+          {
+            Console.WriteLine($"Excluded paths: {string.Join(", ", profile.Filters.ExcludePaths)}");
+            anyFilterChanges = true;
+          }
+
+          if (profile.Filters.SkipHidden)
+          {
+            Console.WriteLine("Skipping hidden files.");
+            anyFilterChanges = true;
+          }
+
+          if (profile.Filters.SkipReadOnly)
+          {
+            Console.WriteLine("Skipping read only files.");
+            anyFilterChanges = true;
+          }
+
+          if (profile.Filters.SkipSystemFiles)
+          {
+            Console.WriteLine("Skipping system files.");
+            anyFilterChanges = true;
+          }
+
+          if (profile.Filters.FollowSymlinks)
+          {
+            Console.WriteLine("Following symlinks.");
+            anyFilterChanges = true;
+          }
+
+          if (profile.Filters.ModifiedAfter != defaults.Filters.ModifiedAfter)
+          {
+            Console.WriteLine($"Including files modified after: {profile.Filters.ModifiedAfter:yyyy-MM-dd}");
+            anyFilterChanges = true;
+          }
+
+          if (profile.Filters.ModifiedBefore != defaults.Filters.ModifiedBefore)
+          {
+            Console.WriteLine($"Including files modified before: {profile.Filters.ModifiedBefore:yyyy-MM-dd}");
+            anyFilterChanges = true;
+          }
+
+          if (profile.Filters.CreatedAfter != defaults.Filters.CreatedAfter)
+          {
+            Console.WriteLine($"Including files created after: {profile.Filters.CreatedAfter:yyyy-MM-dd}");
+            anyFilterChanges = true;
+          }
+
+          if (profile.Filters.CreatedBefore != defaults.Filters.CreatedBefore)
+          {
+            Console.WriteLine($"Including files created before: {profile.Filters.CreatedBefore:yyyy-MM-dd}");
+            anyFilterChanges = true;
+          }
+
+          if (profile.Filters.ModifiedWithinDays != defaults.Filters.ModifiedWithinDays)
+          {
+            Console.WriteLine($"Including files modified within {profile.Filters.ModifiedWithinDays} days");
+            anyFilterChanges = true;
+          }
+
+          if (profile.Filters.CreatedWithinDays != defaults.Filters.CreatedWithinDays)
+          {
+            Console.WriteLine($"Including files created within {profile.Filters.CreatedWithinDays} days");
+            anyFilterChanges = true;
+          }
+
+          if (!anyFilterChanges)
+            Console.WriteLine("All filters are running at defaults.");
+          
         }
     }
 }
