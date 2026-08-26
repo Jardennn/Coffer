@@ -22,7 +22,7 @@ namespace Coffer.Services
             {
                 if (profileName != "default")
                 {
-                    Console.WriteLine($"Profile named {profileName} was not found, do you wish to create it?");
+                    Console.WriteLine($"Profile named {profileName} was not found, do you wish to create it? (y/n)");
                     char confirm = Char.Parse(Console.ReadLine() ?? " ");
                     while (true)
                     {

@@ -20,11 +20,17 @@ namespace Coffer.Core
                 return;
             }
 
-            bool modified = ArgumentParser.ApplyModify(args, profile);
-            if (modified)
+            (bool success, bool mod, string? error) modified = ArgumentParser.ApplyModify(args, profile);
+            if (modified.mod)
             {
                 ProfileService.Save(profile);
                 Console.WriteLine("Profile updated.");
+                return;
+            }
+            else if (!modified.success)
+            {
+                Console.WriteLine($"[ERROR] {modified.error}");
+                Console.WriteLine("Run 'coffer --help' for usage information.");
                 return;
             }
 
@@ -164,14 +170,14 @@ namespace Coffer.Core
         {
           Console.WriteLine("Coffer profile status");
           Console.WriteLine();
-          Console.WriteLine($"Currently loaded/active status: {ProfileService.GetActiveProfile()}");
+          Console.WriteLine($"Currently loaded/active profile: {ProfileService.GetActiveProfile()}");
           Console.WriteLine();
-          
+
           if (profile.SourcePaths.Count == 0)
           {
             Console.WriteLine("No sources have been set yet.");
           }
-          
+
           else
           {
             Console.WriteLine("Sources:");
@@ -180,7 +186,7 @@ namespace Coffer.Core
               Console.WriteLine($"     * {source}");
             }
           }
-          
+
           Console.WriteLine();
 
           if (string.IsNullOrWhiteSpace(profile.DestinationPath))
@@ -191,7 +197,7 @@ namespace Coffer.Core
           {
             Console.WriteLine($"Destination: {profile.DestinationPath}");
           }
-          
+
           Console.WriteLine();
 
           Console.WriteLine("Active filters:");
@@ -296,7 +302,7 @@ namespace Coffer.Core
 
           if (!anyFilterChanges)
             Console.WriteLine("All filters are running at defaults.");
-          
+
         }
     }
 }
