@@ -77,6 +77,24 @@ namespace Coffer.Core
                         modified = true;
                         break;
 
+                    case "--include-folder":
+                        profile.Filters.IncludeFolders ??= new List<string>(); 
+                        while (i + 1 < args.Length && !args[i + 1].StartsWith("--"))
+                        {
+                          profile.Filters.IncludeFolders.Add(args[++i]);
+                        }
+                        modified = true;
+                        break;
+
+                    case "--include-file":
+                        profile.Filters.IncludeFileName ??= new List<string>(); 
+                        while (i + 1 <args.Length && !args[i + 1].StartsWith("--"))
+                        {
+                          profile.Filters.IncludeFileName.Add(args[++i]);
+                        }
+                        modified = true;
+                        break;
+
                     case "--skip-hidden":
                         if (!bool.TryParse(args[++i], out bool skipHidden))
                         {
@@ -183,7 +201,10 @@ namespace Coffer.Core
                         break;
 
                     case "--rm-excluded-ext":
-                        profile.Filters.ExcludeExtensions.Remove(args[++i]);
+                        while (i + 1 < args.Length && !args[i + 1].StartsWith("--"))
+                        {
+                          profile.Filters.ExcludeExtensions.Remove(args[++i]);
+                        }
                         modified = true;
                         break;
 
@@ -193,7 +214,10 @@ namespace Coffer.Core
                         break;
 
                     case "--rm-included-ext":
-                        profile.Filters.IncludeExtensions?.Remove(args[++i]);
+                        while ((i + 1 < args.Length && !args[i + 1].StartsWith("--")))
+                        {
+                          profile.Filters.IncludeExtensions?.Remove(args[++i]);
+                        }
                         modified = true;
                         break;
 
@@ -208,7 +232,10 @@ namespace Coffer.Core
                         break;
 
                     case "--rm-excluded-folder":
-                        profile.Filters.ExcludeFolders.Remove(args[++i]);
+                        while ((i + 1 < args.Length && !args[i + 1].StartsWith("--")))
+                        {
+                          profile.Filters.ExcludeFolders.Remove(args[++i]);
+                        }
                         modified = true;
                         break;
 
@@ -218,12 +245,41 @@ namespace Coffer.Core
                         break;
 
                     case "--rm-excluded-path":
-                        profile.Filters.ExcludePaths.Remove(args[++i]);
+                        while ((i + 1 < args.Length && !args[i + 1].StartsWith("--")))
+                        {
+                          profile.Filters.ExcludePaths.Remove(args[++i]);
+                        }
                         modified = true;
                         break;
 
                     case "--clr-exclude-path":
                         profile.Filters.ExcludePaths = new() { };
+                        modified = true;
+                        break;
+
+                    case "--rm-included-folder":
+                        while (i + 1 < args.Length && !args[i + 1].StartsWith("--"))
+                        {
+                          profile.Filters.IncludeFolders?.Remove(args[++i]);
+                        }
+                        modified = true;
+                        break;
+
+                    case "--clr-include-folder":
+                        profile.Filters.IncludeFolders = null;
+                        modified = true;
+                        break;
+
+                    case "--rm-included-file":
+                        while (i + 1 < args.Length && !args[i + 1].StartsWith("--"))
+                        {
+                          profile.Filters.IncludeFileName?.Remove(args[++i]);
+                        }
+                        modified = true;
+                        break;
+
+                    case "--clr-include-file":
+                        profile.Filters.IncludeFileName = null;
                         modified = true;
                         break;
 
@@ -320,6 +376,8 @@ namespace Coffer.Core
             Console.WriteLine("   --min-mb <size (in MB)>               Set the minimum MB size per file in the backup");
             Console.WriteLine("   --exclude-folder \"<folder name>\"      Add a folder name to exclude onto ExcludeFolder filter");
             Console.WriteLine("   --exclude-path \"<abs path>\"           Add a path to exclude onto ExcludePath filter (e.g. /path/to/exclude)");
+            Console.WriteLine("   --include-folder \"<folder name>\"      Add a folder name to include onto IncludeFolders filter (works the same as IncludeExtensions)");
+            Console.WriteLine("   --include-file \"<file name>\"          Add a file name (or a part of a file name) to include onto IncludeFileName filter (e.g. filter: \"IMG\" file: \"IMG_2343.png\")");
             Console.WriteLine("   --skip-hidden <true/false>            Toggle if to skip hidden files on backup or not");
             Console.WriteLine("   --skip-read-only <true/false>         Toggle if to skip read only files on backup or not");
             Console.WriteLine("   --skip-system-files <true/false>      Toggle if to skip system files on backup or not");
@@ -343,6 +401,10 @@ namespace Coffer.Core
             Console.WriteLine("   --clr-exclude-folder                  Clear the list of excluded folders");
             Console.WriteLine("   --rm-excluded-path \"<path>\"           Remove a path off the excluded paths list");
             Console.WriteLine("   --clr-exclude-path                    Clear the list of excluded paths");
+            Console.WriteLine("   --rm-included-folder \"<folder name>\"  Remove an included folder from the list");
+            Console.WriteLine("   --clr-include-folder                  Clear the list of included folder names");
+            Console.WriteLine("   --rm-included-file \"<file name>\"      Remove an included file from the list");
+            Console.WriteLine("   --clr-include-file                    Clear the list of included files");
             Console.WriteLine("   --clr-mod-after                       Set the ModifiedAfter filter to null (removing the limit)");
             Console.WriteLine("   --clr-mod-before                      Set the ModifiedBefore filter to null (removing the limit)");
             Console.WriteLine("   --clr-created-after                   Set the CreatedAfter filter to null (removing the limit)");

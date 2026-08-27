@@ -216,9 +216,22 @@ namespace Coffer.Core
             anyFilterChanges = true;
           }
 
+          if (profile.Filters.IncludeExtensions?.Count == 0)
+          {
+            Console.WriteLine($"Included extensions list is empty, add an extension or clear (--clr-include-ext) to make the backup work.");
+            anyFilterChanges = true;
+          }
+
           if (profile.Filters.MaxSizeMB != defaults.Filters.MaxSizeMB)
           {
-            Console.WriteLine($"Max size for file: {profile.Filters.MaxSizeMB}MB");
+            if (profile.Filters.MaxSizeMB is null)
+            {
+              Console.WriteLine($"Max size per file: unlimited");
+            }
+            else
+            {
+              Console.WriteLine($"Max size per file: {profile.Filters.MaxSizeMB}MB");
+            }
             anyFilterChanges = true;
           }
 
@@ -237,6 +250,30 @@ namespace Coffer.Core
           if (profile.Filters.ExcludePaths != defaults.Filters.ExcludePaths && profile.Filters.ExcludePaths?.Count > 0)
           {
             Console.WriteLine($"Excluded paths: {string.Join(", ", profile.Filters.ExcludePaths)}");
+            anyFilterChanges = true;
+          }
+
+          if (profile.Filters.IncludeFolders?.Count > 0)
+          {
+            Console.WriteLine($"Included folders: {string.Join(", ", profile.Filters.IncludeFolders)}");
+            anyFilterChanges = true;
+          }
+
+           if (profile.Filters.IncludeFolders?.Count == 0)
+          {
+            Console.WriteLine($"Included folders list is empty, add a folder name or clear (--clr-include-folders) to make the backup work.");
+            anyFilterChanges = true;
+          }
+
+          if (profile.Filters.IncludeFileName?.Count > 0)
+          {
+            Console.WriteLine($"Included file names: {string.Join(", ", profile.Filters.IncludeFileName)}");
+            anyFilterChanges = true;
+          }
+
+          if (profile.Filters.IncludeFileName?.Count == 0)
+          {
+            Console.WriteLine($"Included file names list is empty, add an file name (or a part of it) or clear (--clr-include-files) to make the backup work.");
             anyFilterChanges = true;
           }
 

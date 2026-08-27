@@ -63,6 +63,18 @@ namespace Coffer.Services
                     return false;
                 }
             }
+            
+            // IncludeFolders doesn't work properly, try to replicate ExcludeFolders.
+
+            if (filters.IncludeFolders != null && !filters.IncludeFolders.Any(item => file.FullName.Contains(Path.DirectorySeparatorChar + item + Path.DirectorySeparatorChar)))
+            {
+              return false;
+            }
+              
+            if (filters.IncludeFileName != null && !filters.IncludeFileName.Any(item => file.Name.Contains(item)))
+            {
+              return false;
+            }
 
             if (filters.SkipHidden && Detectors.HiddenDetect(file)) // Hidden files filtering (Checking if SkipHidden is set to true and using the hidden detection funtion for detecting if the path is hidden.)
             {
