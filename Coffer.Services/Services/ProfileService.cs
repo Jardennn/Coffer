@@ -121,11 +121,14 @@ namespace Coffer.Services
                 RecurseSubdirectories = false
             };
 
+            Console.WriteLine("Available profiles:");
+            Console.WriteLine();
+
             foreach (var file in configDir.EnumerateFiles("*.json", enumeriationOptions))
             {
                 if (file.Name != "active.json")
                 {
-                    Console.WriteLine(file.Name);
+                    Console.WriteLine(Path.GetFileNameWithoutExtension(file.Name));
                 }
             }
         }

@@ -31,6 +31,6 @@ cd Coffer.Core && dotnet run
 - [x] Core services and progress reporting (Copier, Verifier, Scanner)
 - [x] Filters
 - [x] Preflight checks
-- [ ] Profile save/load
+- [x] Profile save/load
 - [ ] GUI version
 - [ ] Full project complete
