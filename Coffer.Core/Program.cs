@@ -19,11 +19,23 @@ namespace Coffer.Core
                 Console.WriteLine($"Switched to profile: {profileSwitch}");
                 return;
             }
+            
+            (bool change, string? message) profileAction = ArgumentParser.ProfileActions(args);
+            if (!profileAction.change)
+            {
+              Console.WriteLine($"[ERROR] {profileAction.message}");
+              Console.WriteLine("Run 'coffer --help' for more usage information.");
+              return;
+            }
+            else if (profileAction.change)
+            {
+              return;
+            }
 
             (bool success, bool mod, string? error) modified = ArgumentParser.ApplyModify(args, profile);
             if (modified.mod)
             {
-                ProfileService.Save(profile);
+                ProfileService.Save(profile, ProfileService.GetActiveProfile());
                 Console.WriteLine("Profile updated.");
                 return;
             }

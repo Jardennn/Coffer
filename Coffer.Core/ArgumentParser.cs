@@ -1,4 +1,5 @@
 ﻿using Coffer.Services.Models;
+using Coffer.Services;
 
 namespace Coffer.Core
 {
@@ -17,6 +18,11 @@ namespace Coffer.Core
                         break;
 
                     case "--source":
+                        if (profile.SourcePaths is null)
+                        {
+                          Console.WriteLine("[ERROR] SourcePaths is null, try resetting your profile or using a new one.");
+                          return (false, false, "The list of sources is null");
+                        }
                         while (i + 1 < args.Length && !args[i + 1].StartsWith("--"))
                         {
                             profile.SourcePaths.Add(args[++i]);
@@ -324,8 +330,19 @@ namespace Coffer.Core
             {
                 if (args[i] == "--profile")
                 {
-                    profilename = args[++i];
-                    break;
+                    try
+                    {
+                      profilename = args[++i];
+                    }
+                    catch (IndexOutOfRangeException)
+                    {
+                      Console.WriteLine("Profile name was not given, setting default.");
+                      return profilename;
+                    }
+                }
+                else 
+                {
+                  return null;
                 }
             }
             return profilename;
@@ -349,7 +366,57 @@ namespace Coffer.Core
             Run,
             Status,
             Help,
-            ListProfiles
+            ListProfiles,
+            RemoveProfile,
+            CopyProfile,
+            ResetProfile
+        }
+
+        public static (bool, string?) ProfileActions(string[] args)
+        {
+          bool actionHappened = false;
+          for (int i = 0; i < args.Length; i++)
+          {
+            switch (args[i])
+            {
+              case "--rm-profile":
+                string name;
+                try
+                {
+                  name = args[++i]; 
+                }
+                catch (IndexOutOfRangeException)
+                {
+                  return (false, "Profile name to delete was not provided.");
+                }
+
+                Console.WriteLine($"Are you sure you want to delete profile '{name}'? (y/n)");
+                char confirm = Char.Parse(Console.ReadLine() ?? " ");
+                while (true)
+                {
+                    if (char.ToLower(confirm) == 'n')
+                    {
+                        return (false, "Deleting cancelled.");
+                    }
+                    else if (char.ToLower(confirm) == 'y')
+                    {
+                        break;
+                    }
+                    Console.WriteLine("Input was invalid, try again");
+                    Console.WriteLine("Delete anyway? (y/n)");
+                    confirm = Char.Parse(Console.ReadLine() ?? " ");
+                }
+
+                (bool success, string? message) deletion = ProfileService.RemoveProfile(name);
+                if (!deletion.success)
+                {
+                  return (false, $"{deletion.message}");
+                }
+                actionHappened = true;
+                break;
+            }
+          }
+          return (actionHappened, null);
         }
 
         public static void PrintHelp()

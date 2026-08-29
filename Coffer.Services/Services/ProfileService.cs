@@ -95,9 +95,24 @@ namespace Coffer.Services
                 File.WriteAllText(fullpath, json);
             }
 
+            if (!File.Exists(fullpath))
+            {
+              return "default";
+            }
+
             string jsonString = File.ReadAllText(fullpath);
-            JsonNode jsondata = JsonNode.Parse(jsonString);
-            string profilename = jsondata["activeProfile"]?.ToString();
+            JsonNode? jsondata;
+            try
+            {
+              jsondata = JsonNode.Parse(jsonString);
+            }
+            catch (JsonException)
+            {
+              Console.WriteLine("Active profile file is corrupted, resetting to default.");
+              return "default";
+            }
+
+            string? profilename = jsondata?["activeProfile"]?.ToString();
 
             if (profilename == "" || profilename == null)
             {
@@ -131,6 +146,17 @@ namespace Coffer.Services
                     Console.WriteLine(Path.GetFileNameWithoutExtension(file.Name));
                 }
             }
+        }
+
+        public static (bool, string?) RemoveProfile(string name)
+        {
+          string path = GetConfigPath(name);
+          if (!File.Exists(path))
+          {
+            return (false, $"Profile named '{name}' was not found.");
+          }
+          File.Delete(path);
+          return (true, null);
         }
 
     }
