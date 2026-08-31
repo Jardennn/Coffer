@@ -63,7 +63,7 @@ namespace Coffer.Core
                         {
                             return (false, false, $"Invalid value for --max-mb: '{args[i]}'. Expected a positive number or zero.");
                         }
-                        profile.Filters.MaxSizeMB = minSize;
+                        profile.Filters.MinSizeMB = minSize;
                         modified = true;
                         break;
 
@@ -84,7 +84,7 @@ namespace Coffer.Core
                         break;
 
                     case "--include-folder":
-                        profile.Filters.IncludeFolders ??= new List<string>(); 
+                        profile.Filters.IncludeFolders ??= new List<string>();
                         while (i + 1 < args.Length && !args[i + 1].StartsWith("--"))
                         {
                           profile.Filters.IncludeFolders.Add(args[++i]);
@@ -93,7 +93,7 @@ namespace Coffer.Core
                         break;
 
                     case "--include-file":
-                        profile.Filters.IncludeFileName ??= new List<string>(); 
+                        profile.Filters.IncludeFileName ??= new List<string>();
                         while (i + 1 <args.Length && !args[i + 1].StartsWith("--"))
                         {
                           profile.Filters.IncludeFileName.Add(args[++i]);
@@ -340,7 +340,7 @@ namespace Coffer.Core
                       return profilename;
                     }
                 }
-                else 
+                else
                 {
                   return null;
                 }
@@ -366,57 +366,114 @@ namespace Coffer.Core
             Run,
             Status,
             Help,
-            ListProfiles,
-            RemoveProfile,
-            CopyProfile,
-            ResetProfile
+            ListProfiles
         }
 
-        public static (bool, string?) ProfileActions(string[] args)
+        public enum Result
         {
-          bool actionHappened = false;
-          for (int i = 0; i < args.Length; i++)
-          {
-            switch (args[i])
+            Success,
+            Cancelled,
+            Error,
+            Modified
+        }
+
+        public static (Result, string?) ProfileActions(string[] args)
+        {
+            for (int i = 0; i < args.Length; i++)
             {
-              case "--rm-profile":
                 string name;
-                try
+                switch (args[i])
                 {
-                  name = args[++i]; 
-                }
-                catch (IndexOutOfRangeException)
-                {
-                  return (false, "Profile name to delete was not provided.");
-                }
+                    case "--rm-profile":
+                        if (++i >= args.Length)
+                        {
+                            return (Result.Error, "Not enough argument were passed.");
+                        }
 
-                Console.WriteLine($"Are you sure you want to delete profile '{name}'? (y/n)");
-                char confirm = Char.Parse(Console.ReadLine() ?? " ");
-                while (true)
-                {
-                    if (char.ToLower(confirm) == 'n')
-                    {
-                        return (false, "Deleting cancelled.");
-                    }
-                    else if (char.ToLower(confirm) == 'y')
-                    {
-                        break;
-                    }
-                    Console.WriteLine("Input was invalid, try again");
-                    Console.WriteLine("Delete anyway? (y/n)");
-                    confirm = Char.Parse(Console.ReadLine() ?? " ");
-                }
+                        name = args[i];
 
-                (bool success, string? message) deletion = ProfileService.RemoveProfile(name);
-                if (!deletion.success)
-                {
-                  return (false, $"{deletion.message}");
+                        Console.WriteLine($"Are you sure you want to delete profile '{name}'? (y/n)");
+                        char confirm = Char.Parse(Console.ReadLine() ?? " ");
+                        while (true)
+                        {
+                            if (char.ToLower(confirm) == 'n')
+                            {
+                                return (Result.Cancelled, "Deletion cancelled.");
+                            }
+                            else if (char.ToLower(confirm) == 'y')
+                            {
+                                break;
+                            }
+                            Console.WriteLine("Input was invalid, try again");
+                            Console.WriteLine("Delete anyway? (y/n)");
+                            confirm = Char.Parse(Console.ReadLine() ?? " ");
+                        }
+
+                        (bool success, string? message) deletion = ProfileService.RemoveProfile(name);
+                        if (!deletion.success)
+                        {
+                            return (Result.Error, $"{deletion.message}");
+                        }
+                        if (ProfileService.GetActiveProfile() == name)
+                        {
+                            ProfileService.SetActiveProfile("default");
+                            Console.WriteLine("Active profile reset to default.");
+                        }
+                        return (Result.Modified, "Deletion complete.");
+
+                    case "--cp-profile":
+                        string copyname;
+
+                        if (i + 2 >= args.Length)
+                        {
+                            return (Result.Error, "Not enough argument were passed. (2 arguments needed)");
+                        }
+                        name = args[++i];
+                        copyname = args[++i];
+
+                        (bool success, string? message) copying = ProfileService.CopyProfile(name, copyname);
+                        if (!copying.success)
+                        {
+                            return (Result.Error, copying.message);
+                        }
+                        return (Result.Modified, "Copy complete.");
+
+                    case "--reset-profile":
+                        if (++i >= args.Length)
+                        {
+                            return (Result.Error, "Not enough argument were passed.");
+                        }
+
+                        name = args[i];
+
+                        Console.WriteLine($"Are you sure you want to reset profile '{name}'? (y/n)");
+                        char confirmation = Char.Parse(Console.ReadLine() ?? " ");
+                        while (true)
+                        {
+                            if (char.ToLower(confirmation) == 'n')
+                            {
+                                return (Result.Cancelled, "Reset cancelled.");
+                            }
+                            else if (char.ToLower(confirmation) == 'y')
+                            {
+                                break;
+                            }
+                            Console.WriteLine("Input was invalid, try again");
+                            Console.WriteLine("Reset anyway? (y/n)");
+                            confirm = Char.Parse(Console.ReadLine() ?? " ");
+                        }
+
+
+                        (bool success, string? message) reset = ProfileService.ResetProfile(name);
+                        if (!reset.success)
+                        {
+                            return (Result.Error, reset.message);
+                        }
+
+                        return (Result.Modified, "Reset complete");
                 }
-                actionHappened = true;
-                break;
             }
-          }
-          return (actionHappened, null);
+            return (Result.Success, null);
         }
 
         public static void PrintHelp()

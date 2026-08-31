@@ -97,19 +97,19 @@ namespace Coffer.Services
 
             if (!File.Exists(fullpath))
             {
-              return "default";
+                return "default";
             }
 
             string jsonString = File.ReadAllText(fullpath);
             JsonNode? jsondata;
             try
             {
-              jsondata = JsonNode.Parse(jsonString);
+                jsondata = JsonNode.Parse(jsonString);
             }
             catch (JsonException)
             {
-              Console.WriteLine("Active profile file is corrupted, resetting to default.");
-              return "default";
+                Console.WriteLine("Active profile file is corrupted, resetting to default.");
+                return "default";
             }
 
             string? profilename = jsondata?["activeProfile"]?.ToString();
@@ -150,14 +150,49 @@ namespace Coffer.Services
 
         public static (bool, string?) RemoveProfile(string name)
         {
-          string path = GetConfigPath(name);
-          if (!File.Exists(path))
-          {
-            return (false, $"Profile named '{name}' was not found.");
-          }
-          File.Delete(path);
-          return (true, null);
+            string path = GetConfigPath(name);
+            if (!File.Exists(path))
+            {
+                return (false, $"Profile named '{name}' was not found.");
+            }
+            File.Delete(path);
+            return (true, null);
         }
 
+        public static (bool, string?) CopyProfile(string profilename, string copyname)
+        {
+            string sourcepath = GetConfigPath(profilename);
+            string targetpath = GetConfigPath(copyname);
+
+            if (!File.Exists(sourcepath))
+                return (false, $"Profile named '{profilename}' was not found.");
+
+            if (File.Exists(targetpath))
+                return (false, $"Profile named '{copyname}' was found, delete it first or choose a new name.");
+
+            string json = File.ReadAllText(sourcepath);
+            var profile = JsonSerializer.Deserialize<BackupProfile>(json) ?? new BackupProfile();
+
+            profile.ProfileName = copyname;
+
+            Save(profile, copyname);
+
+            return (true, null);
+        }
+
+        public static (bool, string?) ResetProfile(string profilename)
+        {
+            string path = GetConfigPath(profilename);
+
+            if (!File.Exists(path))
+            {
+                return (false, $"Profile named '{profilename}' was not found.");
+            }
+
+            var profile = new BackupProfile { ProfileName = profilename };
+            Save(profile, profilename);
+
+            return (true, null);
+        }
     }
 }

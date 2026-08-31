@@ -19,17 +19,22 @@ namespace Coffer.Core
                 Console.WriteLine($"Switched to profile: {profileSwitch}");
                 return;
             }
-            
-            (bool change, string? message) profileAction = ArgumentParser.ProfileActions(args);
-            if (!profileAction.change)
+
+            var (result, message) = ArgumentParser.ProfileActions(args);
+            switch (result)
             {
-              Console.WriteLine($"[ERROR] {profileAction.message}");
-              Console.WriteLine("Run 'coffer --help' for more usage information.");
-              return;
-            }
-            else if (profileAction.change)
-            {
-              return;
+                case ArgumentParser.Result.Modified:
+                    Console.WriteLine(message);
+                    return;
+
+                case ArgumentParser.Result.Cancelled:
+                    Console.WriteLine($"[INFO] {message}");
+                    return;
+
+                case ArgumentParser.Result.Error:
+                    Console.WriteLine($"[ERROR] {message}");
+                    Console.WriteLine("Run 'coffer --help' for usage information.");
+                    return;
             }
 
             (bool success, bool mod, string? error) modified = ArgumentParser.ApplyModify(args, profile);
