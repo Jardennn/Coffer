@@ -78,6 +78,7 @@ namespace Coffer.Core
             FilterConfig filters = profile.Filters;
             List<string> srcpaths = profile.SourcePaths;
             string dst = profile.DestinationPath;
+            int chunksize = profile.copyConfig.ChunkSizeMB;
 
             Console.WriteLine("Starting backup.");
             Console.WriteLine("--------------------------------");
@@ -149,7 +150,7 @@ namespace Coffer.Core
                     Directory.CreateDirectory(Path.GetDirectoryName(dstpath)!); // Creates a directory in the same name of a directory that contains a nested source file.
 
                     Console.WriteLine($"Beginning data transfer for: {filepathstr}");
-                    string srchash = Copier.CopyFile(filepathstr, dstpath, 4, onProgress: (copied, total) => // Using lambda to pass onProgress as a function that will take 'copied' and 'total' as arguments.
+                    string srchash = Copier.CopyFile(filepathstr, dstpath, chunksize, onProgress: (copied, total) => // Using lambda to pass onProgress as a function that will take 'copied' and 'total' as arguments.
                     {
                         int percent = (int)Math.Clamp((double)copied / total * 100, 0, 100); // Percentage calculation for how much of the file was copied. Math.Clamp is for limiting the bar to be within 0 to 100, to prevent crashes.
                         int filled = percent / 2; // Making the progress bar 50 characters wide
@@ -158,29 +159,36 @@ namespace Coffer.Core
                     });
                     Console.WriteLine();
 
-                    Console.WriteLine("\nTransfer complete, beginning hash verficiation."); // I added a progress bar to show to progress of data being appended to the hash for verification. For working with large files.
-                    bool verification = Verifier.Verify(srchash, dstpath, 4, onProgress: (appended, total) =>
+                    if (profile.copyConfig.VerifyAfterCopy)
                     {
-                        int percent = (int)Math.Clamp((double)appended / total * 100, 0, 100);
-                        int filled = percent / 2;
-                        string bar = new string('█', filled) + new string('░', 50 - filled);
-                        Console.Write($"\r [{bar}] {percent}%");
-                    });
-                    Console.WriteLine();
-                    Console.WriteLine();
-
-                    if (verification)
-                    {
-                        Console.WriteLine("✓ OK");
+                      Console.WriteLine("\nTransfer complete, beginning hash verficiation."); // I added a progress bar to show to progress of data being appended to the hash for verification. For working with large files.
+                      VerifyRun(srchash, dstpath, chunksize);
                     }
-                    else
-                        Console.WriteLine("✗ FAILED — checksum mismatch");
-
                     Console.Write("\n--------------------------------\n");
                 }
             }
             Console.WriteLine("--------------------------------");
             Console.WriteLine("Backup complete.");
+        }
+
+        static void VerifyRun(string srchash, string dstpath, int chunksize)
+        {
+            bool verification = Verifier.Verify(srchash, dstpath, 4, onProgress: (appended, total) =>
+            {
+               int percent = (int)Math.Clamp((double)appended / total * 100, 0, 100);
+               int filled = percent / 2;
+               string bar = new string('█', filled) + new string('░', 50 - filled);
+               Console.Write($"\r [{bar}] {percent}%");
+            });
+            Console.WriteLine();
+            Console.WriteLine();
+
+            if (verification)
+            {
+              Console.WriteLine("✓ OK");
+            }
+            else
+                Console.WriteLine("✗ FAILED — checksum mismatch");
         }
 
         static void PrintStatus(BackupProfile profile)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Security.Cryptography;
+using Coffer.Services.Models;
 
 namespace Coffer.Services
 {
@@ -37,6 +38,43 @@ namespace Coffer.Services
             string hexString = Convert.ToHexString(hash);
 
             return hexString;
+        }
+
+        public static CopyDecision ShouldCopy(FileInfo src, string dest, DuplicateMode mode)
+        {
+          if (!File.Exists(dest))
+          {
+            return CopyDecision.Copy;
+          }
+
+          switch (mode)
+          {
+            case DuplicateMode.Skip:
+              return CopyDecision.Skip;
+
+            case DuplicateMode.Overwrite:
+              return CopyDecision.Copy;
+
+            case DuplicateMode.KeepNewer:
+              var destfile = new FileInfo(dest);
+
+              return src.LastWriteTime > destfile.LastWriteTime
+                ? CopyDecision.Copy
+                : CopyDecision.Skip;
+
+            case DuplicateMode.Rename:
+              return CopyDecision.Rename;
+
+            default: 
+              return CopyDecision.Copy;
+          }
+        }
+
+        public enum CopyDecision
+        {
+          Copy,
+          Skip,
+          Rename
         }
     }
 }
