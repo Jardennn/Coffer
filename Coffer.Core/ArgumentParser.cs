@@ -318,6 +318,49 @@ namespace Coffer.Core
                         profile.Filters.CreatedWithinDays = null;
                         modified = true;
                         break;
+
+                    case "--set-dup":
+                        switch (args[++i])
+                        {
+                            case "overwrite":
+                                profile.copyConfig.duplicateHandle = DuplicateMode.Overwrite;
+                                break;
+
+                            case "skip":
+                                profile.copyConfig.duplicateHandle = DuplicateMode.Skip;
+                                break;
+
+                            case "keep-new":
+                                profile.copyConfig.duplicateHandle = DuplicateMode.KeepNewer;
+                                break;
+
+                            case "rename":
+                                profile.copyConfig.duplicateHandle = DuplicateMode.Rename;
+                                break;
+
+                            default:
+                                return (false, false, $"Invalid value for --set-dup: {args[i]}");
+                        }
+                        modified = true;
+                        break;
+
+                    case "--chunk-size":
+                        if (!int.TryParse(args[++i], out int chunkSize) || chunkSize <= 0)
+                        {
+                            return (false, false, $"Invalid value for --chunk-size: '{args[i]}'. Expected a positive number.");
+                        }
+                        profile.copyConfig.ChunkSizeMB = chunkSize;
+                        modified = true;
+                        break;
+
+                    case "--verify-after":
+                        if (!bool.TryParse(args[++i], out bool verifyAfter))
+                        {
+                            return (false, false, $"Invalid value for --verify-after: '{args[i]}'. Expected a boolean value (true/false).");
+                        }
+                        profile.copyConfig.VerifyAfterCopy = verifyAfter;
+                        modified = true;
+                        break;
                 }
             }
             return (true, modified, null);
@@ -325,24 +368,25 @@ namespace Coffer.Core
 
         public static string? GetProfileName(string[] args)
         {
-            string? profilename = "default";
+            string? profilename = null;
             for (int i = 0; i < args.Length; i++)
             {
                 if (args[i] == "--profile")
                 {
                     try
                     {
-                      profilename = args[++i];
+                        profilename = args[++i];
                     }
                     catch (IndexOutOfRangeException)
                     {
-                      Console.WriteLine("Profile name was not given, setting default.");
-                      return profilename;
+                        Console.WriteLine("Profile name was not given, setting default.");
+                        profilename = "default";
+                        return profilename;
                     }
                 }
                 else
                 {
-                  return null;
+                    return null;
                 }
             }
             return profilename;

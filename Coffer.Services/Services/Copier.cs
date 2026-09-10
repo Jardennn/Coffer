@@ -65,7 +65,7 @@ namespace Coffer.Services
             case DuplicateMode.Rename:
               return CopyDecision.Rename;
 
-            default: 
+            default:
               return CopyDecision.Copy;
           }
         }
