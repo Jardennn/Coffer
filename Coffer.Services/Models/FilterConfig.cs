@@ -17,7 +17,9 @@ namespace Coffer.Services.Models
     // Folders and files filters
     public List<string> ExcludeFolders {get; set;} = new() {};
     public List<string> ExcludePaths {get; set;} = new() {}; // This could also be excluding specific files.
+    public List<string> ExcludeFileName {get; set;} = new() {};
     public List<string>? IncludeFolders {get; set;} = null;
+    public List<string>? IncludePaths {get; set;} = null;
     public List<string>? IncludeFileName {get; set;} = null;
 
     // Attributes filters

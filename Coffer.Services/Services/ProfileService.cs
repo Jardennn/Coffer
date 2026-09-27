@@ -194,5 +194,25 @@ namespace Coffer.Services
 
             return (true, null);
         }
+
+        public static void SaveTo(BackupProfile profile, string dir)
+        {
+          string path = Path.Combine(dir, $"{profile.ProfileName}.json");
+          string json = JsonSerializer.Serialize(profile, new JsonSerializerOptions { WriteIndented = true });
+          File.WriteAllText(path, json); 
+        }
+
+        public static BackupProfile LoadFrom(string profileName, string dir)
+        {
+          string path = Path.Combine(dir, $"{profileName}.json");
+          
+          if (!File.Exists(path))
+          {
+            return new BackupProfile {ProfileName = profileName, };
+          }
+
+          string json = File.ReadAllText(path);
+          return JsonSerializer.Deserialize<BackupProfile>(json) ?? new BackupProfile();
+        }
     }
 }

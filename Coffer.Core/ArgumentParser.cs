@@ -50,18 +50,29 @@ namespace Coffer.Core
                         break;
 
                     case "--max-mb":
-                        if (!long.TryParse(args[++i], out long maxSize) || maxSize <= 0)
+                        if (++i >= args.Length)
                         {
-                            return (false, false, $"Invalid value for --max-mb: '{args[i]}'. Expected a positive number.");
+                          return (false, false, "No value was passed to --max-mb. Expected a positive number.");
                         }
+
+                        if (!long.TryParse(args[i], out long maxSize) || maxSize <= 0)
+                        {
+                          return (false, false, $"Invalid value for --max-mb: '{args[i]}'. Expected a positive number.");
+                        }
+                        
                         profile.Filters.MaxSizeMB = maxSize;
                         modified = true;
                         break;
 
                     case "--min-mb":
-                        if (!long.TryParse(args[++i], out long minSize) || minSize < 0)
+                        if (++i >= args.Length)
                         {
-                            return (false, false, $"Invalid value for --max-mb: '{args[i]}'. Expected a positive number or zero.");
+                          return (false, false, "No value was passed to --min-mb. Expected a positive number.");
+                        }
+                        
+                        if (!long.TryParse(args[i], out long minSize) || minSize < 0)
+                        {
+                            return (false, false, $"Invalid value for --min-mb: '{args[i]}'. Expected a positive number or zero.");
                         }
                         profile.Filters.MinSizeMB = minSize;
                         modified = true;
@@ -83,11 +94,28 @@ namespace Coffer.Core
                         modified = true;
                         break;
 
+                    case "--exclude-file":
+                        while (i + 1 < args.Length && !args[i + 1].StartsWith("--"))
+                        {
+                          profile.Filters.ExcludeFileName.Add(args[++i]);
+                        }
+                        modified = true;
+                        break;
+
                     case "--include-folder":
                         profile.Filters.IncludeFolders ??= new List<string>();
                         while (i + 1 < args.Length && !args[i + 1].StartsWith("--"))
                         {
                           profile.Filters.IncludeFolders.Add(args[++i]);
+                        }
+                        modified = true;
+                        break;
+
+                    case "--include-path":
+                        profile.Filters.IncludePaths ??= new List<string>();
+                        while (i + 1 < args.Length && !args[i + 1].StartsWith("--"))
+                        {
+                          profile.Filters.IncludePaths.Add(args[++i]);
                         }
                         modified = true;
                         break;
@@ -102,7 +130,12 @@ namespace Coffer.Core
                         break;
 
                     case "--skip-hidden":
-                        if (!bool.TryParse(args[++i], out bool skipHidden))
+                        if (++i >= args.Length)
+                        {
+                          return (false, false, "No value was passed to --skip-hidden. Expected a boolean value (true/false).");
+                        }
+
+                        if (!bool.TryParse(args[i], out bool skipHidden))
                         {
                             return (false, false, $"Invalid value for --skip-hidden: '{args[i]}'. Expected a boolean value (true/false).");
                         }
@@ -111,7 +144,12 @@ namespace Coffer.Core
                         break;
 
                     case "--skip-read-only":
-                        if (!bool.TryParse(args[++i], out bool skipReadOnly))
+                        if (++i >= args.Length)
+                        {
+                          return (false, false, "No value was passed to --skip-read-only. Expected a boolean value (true/false).");
+                        }
+
+                        if (!bool.TryParse(args[i], out bool skipReadOnly))
                         {
                             return (false, false, $"Invalid value for --skip-read-only: '{args[i]}'. Expected a boolean value (true/false).");
                         }
@@ -120,7 +158,12 @@ namespace Coffer.Core
                         break;
 
                     case "--skip-system-files":
-                        if (!bool.TryParse(args[++i], out bool skipSystemFiles))
+                        if (++i >= args.Length)
+                        {
+                          return (false, false, "No value was passed to --skip-system-files. Expected a boolean value (true/false).");
+                        } 
+
+                        if (!bool.TryParse(args[i], out bool skipSystemFiles))
                         {
                             return (false, false, $"Invalid value for --skip-system-files: '{args[i]}'. Expected a boolean value (true/false).");
                         }
@@ -129,7 +172,12 @@ namespace Coffer.Core
                         break;
 
                     case "--follow-symlinks":
-                        if (!bool.TryParse(args[++i], out bool followSymlinks))
+                        if (++i >= args.Length)
+                        {
+                          return (false, false, "No value was passed to --follow-symlinks. Expected a boolean value (true/false).");
+                        }
+
+                        if (!bool.TryParse(args[i], out bool followSymlinks))
                         {
                             return (false, false, $"Invalid value for --follow-symlinks: '{args[i]}'. Expected a boolean value (true/false).");
                         }
@@ -138,7 +186,12 @@ namespace Coffer.Core
                         break;
 
                     case "--mod-after":
-                        if (!DateTime.TryParse(args[++i], out DateTime modifiedAfter))
+                        if (++i >= args.Length)
+                        {
+                          return (false, false, "No value was passed to --mod-after. Expected a DateTime value (yyyy-MM-dd).");
+                        }
+
+                        if (!DateTime.TryParse(args[i], out DateTime modifiedAfter))
                         {
                             return (false, false, $"Invalid value for --mod-after: '{args[i]}'. Expected a DateTime value (yyyy-MM-dd).");
                         }
@@ -147,7 +200,12 @@ namespace Coffer.Core
                         break;
 
                     case "--mod-before":
-                        if (!DateTime.TryParse(args[++i], out DateTime modifiedBefore))
+                        if (++i >= args.Length)
+                        {
+                          return (false, false, "No value was passed to --mod-before. Expected a DateTime value (yyyy-MM-dd).");
+                        }
+
+                        if (!DateTime.TryParse(args[i], out DateTime modifiedBefore))
                         {
                             return (false, false, $"Invalid value for --mod-before: '{args[i]}'. Expected a DateTime value (yyyy-MM-dd).");
                         }
@@ -156,7 +214,12 @@ namespace Coffer.Core
                         break;
 
                     case "--created-after":
-                        if (!DateTime.TryParse(args[++i], out DateTime createdAfter))
+                        if (++i >= args.Length)
+                        {
+                          return (false, false, "No value was passed to --created-after. Expected a DateTime value (yyyy-MM-dd).");
+                        }
+
+                        if (!DateTime.TryParse(args[i], out DateTime createdAfter))
                         {
                             return (false, false, $"Invalid value for --created-after: '{args[i]}'. Expected a DateTime value (yyyy-MM-dd).");
                         }
@@ -165,7 +228,12 @@ namespace Coffer.Core
                         break;
 
                     case "--created-before":
-                        if (!DateTime.TryParse(args[++i], out DateTime createdBefore))
+                        if (++i >= args.Length)
+                        {
+                          return (false, false, "No value was passed to --created-before. Expected a DateTime value (yyyy-MM-dd).");
+                        }
+
+                        if (!DateTime.TryParse(args[i], out DateTime createdBefore))
                         {
                             return (false, false, $"Invalid value for --created-before: '{args[i]}'. Expected a DateTime value (yyyy-MM-dd).");
                         }
@@ -174,7 +242,12 @@ namespace Coffer.Core
                         break;
 
                     case "--mod-within-days":
-                        if (!int.TryParse(args[++i], out int modWithin) || modWithin <= 0)
+                        if (++i >= args.Length)
+                        {
+                          return (false, false, "No value was passed to --mod-within-days. Expected a positive number.");
+                        }
+
+                        if (!int.TryParse(args[i], out int modWithin) || modWithin <= 0)
                         {
                             return (false, false, $"Invalid value for --mod-within-days: '{args[i]}'. Expected a positive number.");
                         }
@@ -183,7 +256,12 @@ namespace Coffer.Core
                         break;
 
                     case "--created-within-days":
-                        if (!int.TryParse(args[++i], out int createdWithin) || createdWithin <= 0)
+                        if (++i >= args.Length)
+                        {
+                          return (false, false, "No value was passed to --created-within-days. Expected a positive number.");
+                        }
+
+                        if (!int.TryParse(args[i], out int createdWithin) || createdWithin <= 0)
                         {
                             return (false, false, $"Invalid value for --created-within-days: '{args[i]}'. Expected a positive number.");
                         }
@@ -263,6 +341,19 @@ namespace Coffer.Core
                         modified = true;
                         break;
 
+                    case "--rm-excluded-file":
+                        while ((i + 1 < args.Length && !args[i + 1].StartsWith("--")))
+                        {
+                          profile.Filters.ExcludeFileName.Remove(args[++i]);
+                        }
+                        modified = true;
+                        break;
+
+                    case "--clr-exclude-file":
+                        profile.Filters.ExcludeFileName = new() { };
+                        modified = true;
+                        break;
+
                     case "--rm-included-folder":
                         while (i + 1 < args.Length && !args[i + 1].StartsWith("--"))
                         {
@@ -273,6 +364,19 @@ namespace Coffer.Core
 
                     case "--clr-include-folder":
                         profile.Filters.IncludeFolders = null;
+                        modified = true;
+                        break;
+
+                    case "--rm-included-path":
+                        while ((i + 1 < args.Length && !args[i + 1].StartsWith("--")))
+                        {
+                          profile.Filters.IncludePaths?.Remove(args[++i]);
+                        }
+                        modified = true;
+                        break;
+
+                    case "--clr-include-path":
+                        profile.Filters.IncludePaths = null;
                         modified = true;
                         break;
 
@@ -320,7 +424,12 @@ namespace Coffer.Core
                         break;
 
                     case "--set-dup":
-                        switch (args[++i])
+                        if (++i >= args.Length)
+                        {
+                          return (false, false, "No value was passed to --set-dup. Expected a duplication mode.");
+                        }
+
+                        switch (args[i])
                         {
                             case "overwrite":
                                 profile.copyConfig.duplicateHandle = DuplicateMode.Overwrite;
@@ -345,7 +454,12 @@ namespace Coffer.Core
                         break;
 
                     case "--chunk-size":
-                        if (!int.TryParse(args[++i], out int chunkSize) || chunkSize <= 0)
+                        if (++i >= args.Length)
+                        {
+                          return (false, false, "No value was passed to --chunk-size. Expected a positive number.");
+                        }
+
+                        if (!int.TryParse(args[i], out int chunkSize) || chunkSize <= 0)
                         {
                             return (false, false, $"Invalid value for --chunk-size: '{args[i]}'. Expected a positive number.");
                         }
@@ -354,7 +468,12 @@ namespace Coffer.Core
                         break;
 
                     case "--verify-after":
-                        if (!bool.TryParse(args[++i], out bool verifyAfter))
+                        if (++i >= args.Length)
+                        {
+                          return (false, false, "No value was passed to --verify-after. Expected a boolean value (true/false).");
+                        }
+
+                        if (!bool.TryParse(args[i], out bool verifyAfter))
                         {
                             return (false, false, $"Invalid value for --verify-after: '{args[i]}'. Expected a boolean value (true/false).");
                         }

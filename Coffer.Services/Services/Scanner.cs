@@ -24,8 +24,6 @@ namespace Coffer.Services
             return results;
         }
 
-
-
         private static bool ShouldInclude(FileInfo file, FilterConfig filters)
         {
             if (filters.ExcludeExtensions.Contains(file.Extension.ToLower())) // Extension exclusion filtering
@@ -63,10 +61,23 @@ namespace Coffer.Services
                     return false;
                 }
             }
+
+            foreach (var excludedName in filters.ExcludeFileName)
+            {
+              if (file.Name.Contains(excludedName))
+              {
+                return false;
+              }
+            }
             
             // IncludeFolders doesn't work properly, try to replicate ExcludeFolders.
 
             if (filters.IncludeFolders != null && !filters.IncludeFolders.Any(item => file.FullName.Contains(Path.DirectorySeparatorChar + item + Path.DirectorySeparatorChar)))
+            {
+              return false;
+            }
+
+            if (filters.IncludePaths != null && !filters.IncludePaths.Any(item => file.FullName.StartsWith(item)))
             {
               return false;
             }
