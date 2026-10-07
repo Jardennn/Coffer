@@ -7,7 +7,12 @@ namespace Coffer.Services.Models
   public class FilterConfig 
   {
     // Extensions filters
-    public List<string> ExcludeExtensions {get; set;} = new() {};
+    private List<string> _ExcludeExtensions = new() {};
+    public List<string> ExcludeExtensions {
+      get => _ExcludeExtensions;
+      set => _ExcludeExtensions = value ?? new() {};
+    }
+    
     public List<string>? IncludeExtensions {get; set;} = null;
 
     // Size filters
@@ -15,9 +20,24 @@ namespace Coffer.Services.Models
     public long MinSizeMB {get; set;} = 0;
 
     // Folders and files filters
-    public List<string> ExcludeFolders {get; set;} = new() {};
-    public List<string> ExcludePaths {get; set;} = new() {}; // This could also be excluding specific files.
-    public List<string> ExcludeFileName {get; set;} = new() {};
+    private List<string> _ExcludeFolders = new() {};
+    public List<string> ExcludeFolders {
+      get => _ExcludeFolders;
+      set => _ExcludeFolders = value ?? new() {};
+    }
+    
+    private List<string> _ExcludePaths = new() {}; // This could also be excluding specific files.
+    public List<string> ExcludePaths {
+      get => _ExcludePaths;
+      set => _ExcludePaths = value ?? new() {};
+    }
+
+    private List<string> _ExcludeFileName = new() {};
+    public List<string> ExcludeFileName {
+      get => _ExcludeFileName;
+      set => _ExcludeFileName = value ?? new() {};
+    }
+
     public List<string>? IncludeFolders {get; set;} = null;
     public List<string>? IncludePaths {get; set;} = null;
     public List<string>? IncludeFileName {get; set;} = null;

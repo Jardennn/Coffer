@@ -65,6 +65,10 @@ namespace Coffer.Core
                 case ArgumentParser.Action.Help:
                     ArgumentParser.PrintHelp();
                     break;
+                case ArgumentParser.Action.FiltersHelp:
+                    ArgumentParser.PrintFiltersHelp();
+                    break;
+
                 case ArgumentParser.Action.ListProfiles:
                     ProfileService.ListProfiles();
                     break;

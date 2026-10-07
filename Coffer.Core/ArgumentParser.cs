@@ -13,16 +13,21 @@ namespace Coffer.Core
                 switch (args[i])
                 {
                     case "--destination":
+                        if (i + 1 >= args.Length || args[i + 1].StartsWith("--"))
+                        {
+                          return (false, false, "No value was passed to --destination. Expected an absolute path and one value only.");
+                        }
+
                         profile.DestinationPath = args[++i];
                         modified = true;
                         break;
 
                     case "--source":
-                        if (profile.SourcePaths is null)
+                        if (i + 1 >= args.Length || args[i + 1].StartsWith("--"))
                         {
-                          Console.WriteLine("[ERROR] SourcePaths is null, try resetting your profile or using a new one.");
-                          return (false, false, "The list of sources is null");
+                          return (false, false, "No value was passed to --source, Expected an absolute path and atleast one value.");
                         }
+
                         while (i + 1 < args.Length && !args[i + 1].StartsWith("--"))
                         {
                             profile.SourcePaths.Add(args[++i]);
@@ -33,6 +38,11 @@ namespace Coffer.Core
                     // Filters modification
 
                     case "--exclude-ext":
+                        if (i + 1 >= args.Length || args[i + 1].StartsWith("--"))
+                        {
+                          return (false, false, "No value was passed to --exclude-ext, Expected an extension and atleast one value.");
+                        }
+
                         while (i + 1 < args.Length && !args[i + 1].StartsWith("--"))
                         {
                             profile.Filters.ExcludeExtensions.Add(args[++i]);
@@ -41,7 +51,12 @@ namespace Coffer.Core
                         break;
 
                     case "--include-ext":
+                        if (i + 1 >= args.Length || args[i + 1].StartsWith("--"))
+                        {
+                          return (false, false, "No value was passed to --include-ext, Expected an extension and atleast one value.");
+                        }
                         profile.Filters.IncludeExtensions ??= new List<string>(); // If the IncludeExtensions list is null, the argument will make a new list. If it isn't null it woulnd't do anything.
+                        
                         while (i + 1 < args.Length && !args[i + 1].StartsWith("--")) // Going through every argument given until it reaches an out of bounds error or another passed flag.
                         {
                             profile.Filters.IncludeExtensions.Add(args[++i]);
@@ -50,12 +65,12 @@ namespace Coffer.Core
                         break;
 
                     case "--max-mb":
-                        if (++i >= args.Length)
+                        if (i + 1 >= args.Length || args[i + 1].StartsWith("--"))
                         {
-                          return (false, false, "No value was passed to --max-mb. Expected a positive number.");
+                          return (false, false, "No value was passed to --max-mb. Expected a positive number and one value only.");
                         }
 
-                        if (!long.TryParse(args[i], out long maxSize) || maxSize <= 0)
+                        if (!long.TryParse(args[++i], out long maxSize) || maxSize <= 0)
                         {
                           return (false, false, $"Invalid value for --max-mb: '{args[i]}'. Expected a positive number.");
                         }
@@ -65,12 +80,12 @@ namespace Coffer.Core
                         break;
 
                     case "--min-mb":
-                        if (++i >= args.Length)
+                        if (i + 1 >= args.Length || args[i + 1].StartsWith("--"))
                         {
-                          return (false, false, "No value was passed to --min-mb. Expected a positive number.");
+                          return (false, false, "No value was passed to --min-mb. Expected a positive number and one value only.");
                         }
                         
-                        if (!long.TryParse(args[i], out long minSize) || minSize < 0)
+                        if (!long.TryParse(args[++i], out long minSize) || minSize < 0)
                         {
                             return (false, false, $"Invalid value for --min-mb: '{args[i]}'. Expected a positive number or zero.");
                         }
@@ -79,6 +94,11 @@ namespace Coffer.Core
                         break;
 
                     case "--exclude-folder":
+                        if (i + 1 >= args.Length || args[i + 1].StartsWith("--"))
+                        {
+                          return (false, false, "No value was passed to --exclude-folder. Expected a folder name and atleast one value.");
+                        }
+
                         while (i + 1 < args.Length && !args[i + 1].StartsWith("--"))
                         {
                             profile.Filters.ExcludeFolders.Add(args[++i]);
@@ -87,6 +107,11 @@ namespace Coffer.Core
                         break;
 
                     case "--exclude-path":
+                        if (i + 1 >= args.Length || args[i + 1].StartsWith("--"))
+                        {
+                          return (false, false, "No value was passed to --exclude-path. Expected a path and atleast one value.");
+                        }
+
                         while (i + 1 < args.Length && !args[i + 1].StartsWith("--"))
                         {
                             profile.Filters.ExcludePaths.Add(args[++i]);
@@ -95,6 +120,11 @@ namespace Coffer.Core
                         break;
 
                     case "--exclude-file":
+                        if (i + 1 >= args.Length || args[i + 1].StartsWith("--"))
+                        {
+                          return (false, false, "No value was passed to --exclude-file. Expected a file name or partial file name and atleast one value.");
+                        }
+
                         while (i + 1 < args.Length && !args[i + 1].StartsWith("--"))
                         {
                           profile.Filters.ExcludeFileName.Add(args[++i]);
@@ -103,6 +133,11 @@ namespace Coffer.Core
                         break;
 
                     case "--include-folder":
+                        if (i + 1 >= args.Length || args[i + 1].StartsWith("--"))
+                        {
+                          return (false, false, "No value was passed to --include-folder. Expected a folder name and atleast one value.");
+                        }
+
                         profile.Filters.IncludeFolders ??= new List<string>();
                         while (i + 1 < args.Length && !args[i + 1].StartsWith("--"))
                         {
@@ -112,6 +147,11 @@ namespace Coffer.Core
                         break;
 
                     case "--include-path":
+                        if (i + 1 >= args.Length || args[i + 1].StartsWith("--"))
+                        {
+                          return (false, false, "No value was passed to --include-path. Expected a path and atleast one value.");
+                        }
+
                         profile.Filters.IncludePaths ??= new List<string>();
                         while (i + 1 < args.Length && !args[i + 1].StartsWith("--"))
                         {
@@ -121,6 +161,11 @@ namespace Coffer.Core
                         break;
 
                     case "--include-file":
+                        if (i + 1 >= args.Length || args[i + 1].StartsWith("--"))
+                        {
+                          return (false, false, "No value was passed to --include-file. Expected a file name or partial file name and atleast one value.");
+                        }
+
                         profile.Filters.IncludeFileName ??= new List<string>();
                         while (i + 1 <args.Length && !args[i + 1].StartsWith("--"))
                         {
@@ -130,12 +175,12 @@ namespace Coffer.Core
                         break;
 
                     case "--skip-hidden":
-                        if (++i >= args.Length)
+                        if (i + 1 >= args.Length || args[i + 1].StartsWith("--"))
                         {
-                          return (false, false, "No value was passed to --skip-hidden. Expected a boolean value (true/false).");
+                          return (false, false, "No value was passed to --skip-hidden. Expected a boolean value (true/false) and one value only.");
                         }
 
-                        if (!bool.TryParse(args[i], out bool skipHidden))
+                        if (!bool.TryParse(args[++i], out bool skipHidden))
                         {
                             return (false, false, $"Invalid value for --skip-hidden: '{args[i]}'. Expected a boolean value (true/false).");
                         }
@@ -144,12 +189,12 @@ namespace Coffer.Core
                         break;
 
                     case "--skip-read-only":
-                        if (++i >= args.Length)
+                        if (i + 1 >= args.Length || args[i + 1].StartsWith("--"))
                         {
-                          return (false, false, "No value was passed to --skip-read-only. Expected a boolean value (true/false).");
+                          return (false, false, "No value was passed to --skip-read-only. Expected a boolean value (true/false) and one value only.");
                         }
 
-                        if (!bool.TryParse(args[i], out bool skipReadOnly))
+                        if (!bool.TryParse(args[++i], out bool skipReadOnly))
                         {
                             return (false, false, $"Invalid value for --skip-read-only: '{args[i]}'. Expected a boolean value (true/false).");
                         }
@@ -158,12 +203,12 @@ namespace Coffer.Core
                         break;
 
                     case "--skip-system-files":
-                        if (++i >= args.Length)
+                        if (i + 1 >= args.Length || args[i + 1].StartsWith("--"))
                         {
-                          return (false, false, "No value was passed to --skip-system-files. Expected a boolean value (true/false).");
+                          return (false, false, "No value was passed to --skip-system-files. Expected a boolean value (true/false) and one value only.");
                         } 
 
-                        if (!bool.TryParse(args[i], out bool skipSystemFiles))
+                        if (!bool.TryParse(args[++i], out bool skipSystemFiles))
                         {
                             return (false, false, $"Invalid value for --skip-system-files: '{args[i]}'. Expected a boolean value (true/false).");
                         }
@@ -172,12 +217,12 @@ namespace Coffer.Core
                         break;
 
                     case "--follow-symlinks":
-                        if (++i >= args.Length)
+                        if (i + 1 >= args.Length || args[i + 1].StartsWith("--"))
                         {
-                          return (false, false, "No value was passed to --follow-symlinks. Expected a boolean value (true/false).");
+                          return (false, false, "No value was passed to --follow-symlinks. Expected a boolean value (true/false) and one value only.");
                         }
 
-                        if (!bool.TryParse(args[i], out bool followSymlinks))
+                        if (!bool.TryParse(args[++i], out bool followSymlinks))
                         {
                             return (false, false, $"Invalid value for --follow-symlinks: '{args[i]}'. Expected a boolean value (true/false).");
                         }
@@ -186,12 +231,12 @@ namespace Coffer.Core
                         break;
 
                     case "--mod-after":
-                        if (++i >= args.Length)
+                        if (i + 1 >= args.Length || args[i + 1].StartsWith("--"))
                         {
-                          return (false, false, "No value was passed to --mod-after. Expected a DateTime value (yyyy-MM-dd).");
+                          return (false, false, "No value was passed to --mod-after. Expected a DateTime value (yyyy-MM-dd) and one value only.");
                         }
 
-                        if (!DateTime.TryParse(args[i], out DateTime modifiedAfter))
+                        if (!DateTime.TryParse(args[++i], out DateTime modifiedAfter))
                         {
                             return (false, false, $"Invalid value for --mod-after: '{args[i]}'. Expected a DateTime value (yyyy-MM-dd).");
                         }
@@ -200,12 +245,12 @@ namespace Coffer.Core
                         break;
 
                     case "--mod-before":
-                        if (++i >= args.Length)
+                        if (i + 1 >= args.Length || args[i + 1].StartsWith("--"))
                         {
-                          return (false, false, "No value was passed to --mod-before. Expected a DateTime value (yyyy-MM-dd).");
+                          return (false, false, "No value was passed to --mod-before. Expected a DateTime value (yyyy-MM-dd) and one value only.");
                         }
 
-                        if (!DateTime.TryParse(args[i], out DateTime modifiedBefore))
+                        if (!DateTime.TryParse(args[++i], out DateTime modifiedBefore))
                         {
                             return (false, false, $"Invalid value for --mod-before: '{args[i]}'. Expected a DateTime value (yyyy-MM-dd).");
                         }
@@ -214,12 +259,12 @@ namespace Coffer.Core
                         break;
 
                     case "--created-after":
-                        if (++i >= args.Length)
+                        if (i + 1 >= args.Length || args[i + 1].StartsWith("--"))
                         {
-                          return (false, false, "No value was passed to --created-after. Expected a DateTime value (yyyy-MM-dd).");
+                          return (false, false, "No value was passed to --created-after. Expected a DateTime value (yyyy-MM-dd) and one value only.");
                         }
 
-                        if (!DateTime.TryParse(args[i], out DateTime createdAfter))
+                        if (!DateTime.TryParse(args[++i], out DateTime createdAfter))
                         {
                             return (false, false, $"Invalid value for --created-after: '{args[i]}'. Expected a DateTime value (yyyy-MM-dd).");
                         }
@@ -228,12 +273,12 @@ namespace Coffer.Core
                         break;
 
                     case "--created-before":
-                        if (++i >= args.Length)
+                        if (i + 1 >= args.Length || args[i + 1].StartsWith("--"))
                         {
-                          return (false, false, "No value was passed to --created-before. Expected a DateTime value (yyyy-MM-dd).");
+                          return (false, false, "No value was passed to --created-before. Expected a DateTime value (yyyy-MM-dd) and one value only.");
                         }
 
-                        if (!DateTime.TryParse(args[i], out DateTime createdBefore))
+                        if (!DateTime.TryParse(args[++i], out DateTime createdBefore))
                         {
                             return (false, false, $"Invalid value for --created-before: '{args[i]}'. Expected a DateTime value (yyyy-MM-dd).");
                         }
@@ -242,12 +287,12 @@ namespace Coffer.Core
                         break;
 
                     case "--mod-within-days":
-                        if (++i >= args.Length)
+                        if (i + 1 >= args.Length || args[i + 1].StartsWith("--"))
                         {
-                          return (false, false, "No value was passed to --mod-within-days. Expected a positive number.");
+                          return (false, false, "No value was passed to --mod-within-days. Expected a positive number and one value only.");
                         }
 
-                        if (!int.TryParse(args[i], out int modWithin) || modWithin <= 0)
+                        if (!int.TryParse(args[++i], out int modWithin) || modWithin <= 0)
                         {
                             return (false, false, $"Invalid value for --mod-within-days: '{args[i]}'. Expected a positive number.");
                         }
@@ -256,12 +301,12 @@ namespace Coffer.Core
                         break;
 
                     case "--created-within-days":
-                        if (++i >= args.Length)
+                        if (i + 1 >= args.Length || args[i + 1].StartsWith("--"))
                         {
-                          return (false, false, "No value was passed to --created-within-days. Expected a positive number.");
+                          return (false, false, "No value was passed to --created-within-days. Expected a positive number and one value only.");
                         }
 
-                        if (!int.TryParse(args[i], out int createdWithin) || createdWithin <= 0)
+                        if (!int.TryParse(args[++i], out int createdWithin) || createdWithin <= 0)
                         {
                             return (false, false, $"Invalid value for --created-within-days: '{args[i]}'. Expected a positive number.");
                         }
@@ -272,6 +317,11 @@ namespace Coffer.Core
                         // Nullifiers / removers
 
                     case "--rm-src":
+                        if (i + 1 >= args.Length || args[i + 1].StartsWith("--"))
+                        {
+                          return (false, false, "No value was passed to --rm-src, Expected a path and atleast one value.");
+                        }
+
                         while (i + 1 < args.Length && !args[i + 1].StartsWith("--"))
                         {
                             profile.SourcePaths?.Remove(args[++i]);
@@ -285,6 +335,11 @@ namespace Coffer.Core
                         break;
 
                     case "--rm-excluded-ext":
+                        if (i + 1 >= args.Length || args[i + 1].StartsWith("--"))
+                        {
+                          return (false, false, "No value was passed to --rm-excluded-ext, Expected an extension and atleast one value.");
+                        }
+
                         while (i + 1 < args.Length && !args[i + 1].StartsWith("--"))
                         {
                           profile.Filters.ExcludeExtensions.Remove(args[++i]);
@@ -298,6 +353,11 @@ namespace Coffer.Core
                         break;
 
                     case "--rm-included-ext":
+                        if (i + 1 >= args.Length || args[i + 1].StartsWith("--"))
+                        {
+                          return (false, false, "No value was passed to --rm-included-ext, Expected an extension and atleast one value.");
+                        }
+
                         while ((i + 1 < args.Length && !args[i + 1].StartsWith("--")))
                         {
                           profile.Filters.IncludeExtensions?.Remove(args[++i]);
@@ -316,6 +376,11 @@ namespace Coffer.Core
                         break;
 
                     case "--rm-excluded-folder":
+                        if (i + 1 >= args.Length || args[i + 1].StartsWith("--"))
+                        {
+                          return (false, false, "No value was passed to --rm-excluded-folder, Expected a folder name and atleast one value.");
+                        }
+
                         while ((i + 1 < args.Length && !args[i + 1].StartsWith("--")))
                         {
                           profile.Filters.ExcludeFolders.Remove(args[++i]);
@@ -329,6 +394,11 @@ namespace Coffer.Core
                         break;
 
                     case "--rm-excluded-path":
+                        if (i + 1 >= args.Length || args[i + 1].StartsWith("--"))
+                        {
+                          return (false, false, "No value was passed to --rm-excluded-path, Expected a path and atleast one value.");
+                        }
+
                         while ((i + 1 < args.Length && !args[i + 1].StartsWith("--")))
                         {
                           profile.Filters.ExcludePaths.Remove(args[++i]);
@@ -342,6 +412,11 @@ namespace Coffer.Core
                         break;
 
                     case "--rm-excluded-file":
+                        if (i + 1 >= args.Length || args[i + 1].StartsWith("--"))
+                        {
+                          return (false, false, "No value was passed to --rm-excluded-file, Expected a file name or partial file name and atleast one value.");
+                        }
+
                         while ((i + 1 < args.Length && !args[i + 1].StartsWith("--")))
                         {
                           profile.Filters.ExcludeFileName.Remove(args[++i]);
@@ -355,6 +430,11 @@ namespace Coffer.Core
                         break;
 
                     case "--rm-included-folder":
+                        if (i + 1 >= args.Length || args[i + 1].StartsWith("--"))
+                        {
+                          return (false, false, "No value was passed to --rm-included-folder, Expected a folder name and atleast one value.");
+                        }
+
                         while (i + 1 < args.Length && !args[i + 1].StartsWith("--"))
                         {
                           profile.Filters.IncludeFolders?.Remove(args[++i]);
@@ -368,6 +448,11 @@ namespace Coffer.Core
                         break;
 
                     case "--rm-included-path":
+                        if (i + 1 >= args.Length || args[i + 1].StartsWith("--"))
+                        {
+                          return (false, false, "No value was passed to --rm-included-path, Expected a path and atleast one value.");
+                        }
+
                         while ((i + 1 < args.Length && !args[i + 1].StartsWith("--")))
                         {
                           profile.Filters.IncludePaths?.Remove(args[++i]);
@@ -381,6 +466,11 @@ namespace Coffer.Core
                         break;
 
                     case "--rm-included-file":
+                        if (i + 1 >= args.Length || args[i + 1].StartsWith("--"))
+                        {
+                          return (false, false, "No value was passed to --rm-included-file, Expected a file name or partial file name and atleast one value.");
+                        }
+
                         while (i + 1 < args.Length && !args[i + 1].StartsWith("--"))
                         {
                           profile.Filters.IncludeFileName?.Remove(args[++i]);
@@ -424,12 +514,12 @@ namespace Coffer.Core
                         break;
 
                     case "--set-dup":
-                        if (++i >= args.Length)
+                        if (i + 1 >= args.Length || args[i + 1].StartsWith("--"))
                         {
-                          return (false, false, "No value was passed to --set-dup. Expected a duplication mode.");
+                          return (false, false, "No value was passed to --set-dup. Expected a duplication mode and only one value.");
                         }
 
-                        switch (args[i])
+                        switch (args[++i])
                         {
                             case "overwrite":
                                 profile.copyConfig.duplicateHandle = DuplicateMode.Overwrite;
@@ -454,12 +544,12 @@ namespace Coffer.Core
                         break;
 
                     case "--chunk-size":
-                        if (++i >= args.Length)
+                        if (i >= args.Length || args[i + 1].StartsWith("--"))
                         {
-                          return (false, false, "No value was passed to --chunk-size. Expected a positive number.");
+                          return (false, false, "No value was passed to --chunk-size. Expected a positive number and one value only.");
                         }
 
-                        if (!int.TryParse(args[i], out int chunkSize) || chunkSize <= 0)
+                        if (!int.TryParse(args[++i], out int chunkSize) || chunkSize <= 0)
                         {
                             return (false, false, $"Invalid value for --chunk-size: '{args[i]}'. Expected a positive number.");
                         }
@@ -468,12 +558,12 @@ namespace Coffer.Core
                         break;
 
                     case "--verify-after":
-                        if (++i >= args.Length)
+                        if (i >= args.Length || args[i + 1].StartsWith("--"))
                         {
-                          return (false, false, "No value was passed to --verify-after. Expected a boolean value (true/false).");
+                          return (false, false, "No value was passed to --verify-after. Expected a boolean value (true/false) and one value only.");
                         }
 
-                        if (!bool.TryParse(args[i], out bool verifyAfter))
+                        if (!bool.TryParse(args[++i], out bool verifyAfter))
                         {
                             return (false, false, $"Invalid value for --verify-after: '{args[i]}'. Expected a boolean value (true/false).");
                         }
@@ -515,12 +605,20 @@ namespace Coffer.Core
         {
             if (args.Contains("--run"))
                 return Action.Run;
+
             if (args.Contains("--status"))
                 return Action.Status;
-            if (args.Contains("--help"))
-                return Action.Help;
+
+            if (args.Contains("--meow"))
+                //return Action.Help;
+                if (args.Contains("filters"))
+                  return Action.FiltersHelp;
+                else
+                  return Action.Help;
+
             if (args.Contains("--list-profiles"))
                 return Action.ListProfiles;
+
             return null;
         }
 
@@ -529,6 +627,7 @@ namespace Coffer.Core
             Run,
             Status,
             Help,
+            FiltersHelp,
             ListProfiles
         }
 
@@ -645,6 +744,8 @@ namespace Coffer.Core
             Console.WriteLine();
             Console.WriteLine("Usage: coffer [options]");
             Console.WriteLine();
+              
+            // ESSENTIALS
             Console.WriteLine("Options:");
             Console.WriteLine("   --profile \"<profile name>\"            Load an existing profile or create a new profile if the given profile doesn't exist");
             Console.WriteLine("   --source  \"<path>\"                    Add a source path to the list on the config");
@@ -655,6 +756,14 @@ namespace Coffer.Core
             Console.WriteLine("   --run                                 Run the backup");
             Console.WriteLine("   --status                              Print the status of the current loaded profile");
             Console.WriteLine("   --list-profiles                       List the saved available profiles");
+            Console.WriteLine(); 
+        }
+
+        public static void PrintFiltersHelp()
+        {
+            Console.WriteLine("Coffer - Local backup tool");
+            Console.WriteLine();
+            Console.WriteLine("Usage: coffer [options]");
             Console.WriteLine();
             Console.WriteLine("Filters - Configurating filters for the profile config.");
             Console.WriteLine("   --exclude-ext \"<extensions>\"          Add extensions to exclude onto ExcludeExtensions filter (e.g. .txt)");
@@ -673,8 +782,8 @@ namespace Coffer.Core
             Console.WriteLine("   --mod-before <yyyy-MM-dd>             Only include files modified before given date");
             Console.WriteLine("   --created-after <yyyy-MM-dd>          Only include files created after given date");
             Console.WriteLine("   --created-before <yyyy-MM-dd>         Only include files created before given date");
-            Console.WriteLine("   --mod-within-days <days>              Only include files modified within the given days count");
-            Console.WriteLine("   --created-within-days                 Only include files created within the given days count");
+            Console.WriteLine("   --mod-within-days <days (int)>        Only include files modified within the given days count");
+            Console.WriteLine("   --created-within-days <days (int)>    Only include files created within the given days count");
             Console.WriteLine();
             Console.WriteLine("Nullifiers - Remove/clear configured filters");
             Console.WriteLine("   --rm-src \"<source>\"                   Remove a source off the sources list");
@@ -699,5 +808,15 @@ namespace Coffer.Core
             Console.WriteLine("   --clr-modified-within                 Set the ModifiedWithinDays filter to null (removing the limit)");
             Console.WriteLine("   --clr-created-within                  Set the CreatedWithinDays filter to null (removing the limit)");
         }
+
+        // Need to continue this
+       /*  public static void PrintProfileAndCopyConf()
+        {
+          Console.WriteLine("Coffer - Local backup tool");
+          Console.WriteLine();
+          Console.WriteLine("Usage: coffer [options]");
+          Console.WriteLine();
+          Console.WriteLine("   --");
+        }*/
     }
 }

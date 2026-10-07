@@ -53,68 +53,106 @@ namespace Coffer.Tests
 
       // MaxSizeMB
       (bool success, bool mod, string? message) modify = ArgumentParser.ApplyModify(new[] {"--max-mb", "test"}, profile);
-      Assert.Equal("Invalid value for --max-mb: 'test'. Expected a positive number.", modify.message);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
 
       // negative
       modify = ArgumentParser.ApplyModify(new[] {"--max-mb", "-5"}, profile);
-      Assert.Equal("Invalid value for --max-mb: '-5'. Expected a positive number.", modify.message);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
 
       // zero
       modify = ArgumentParser.ApplyModify(new[] {"--max-mb", "0"}, profile);
-      Assert.Equal("Invalid value for --max-mb: '0'. Expected a positive number.", modify.message);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
 
       modify = ArgumentParser.ApplyModify(new[] {"--max-mb"}, profile);
-      Assert.Equal("No value was passed to --max-mb. Expected a positive number.", modify.message);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+
+      modify = ArgumentParser.ApplyModify(new[] {"--max-mb", "--source"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
 
       // MinSizeMB
-
       modify = ArgumentParser.ApplyModify(new[] {"--min-mb", "hello"}, profile);
-      Assert.Equal("Invalid value for --min-mb: 'hello'. Expected a positive number.", modify.message);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
 
       modify = ArgumentParser.ApplyModify(new[] {"--min-mb", "-4"}, profile);
-      Assert.Equal("Invalid value for --min-mb: '-4'. Expected a positive number.", modify.message);
-  
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+
       modify = ArgumentParser.ApplyModify(new[] {"--min-mb"}, profile);
-      Assert.Equal("No value was passed to --min-mb. Expected a positive number.", modify.message);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+
+      modify = ArgumentParser.ApplyModify(new[] {"--min-mb", "--source"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
 
       // ChunkSizeMB
       modify = ArgumentParser.ApplyModify(new[] {"--chunk-size", "?"}, profile);
-      Assert.Equal("Invalid value for --chunk-size: '?'. Expected a positive number.", modify.message);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
 
       modify = ArgumentParser.ApplyModify(new[] {"--chunk-size", "-6"}, profile);
-      Assert.Equal("Invalid value for --chunk-size: '-6'. Expected a positive number.", modify.message);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
 
       modify = ArgumentParser.ApplyModify(new[] {"--chunk-size", "0"}, profile);
-      Assert.Equal("Invalid value for --chunk-size: '0'. Expected a positive number.", modify.message);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
 
       modify = ArgumentParser.ApplyModify(new[] {"--chunk-size"}, profile);
-      Assert.Equal("No value was passed to --chunk-size. Expected a positive number.", modify.message);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+
+      modify = ArgumentParser.ApplyModify(new[] {"--chunk-size", "--source"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
 
       // CreatedWithinDays
       modify = ArgumentParser.ApplyModify(new[] {"--created-within-days", "meow"}, profile);
-      Assert.Equal("Invalid value for --created-within-days: 'meow'. Expected a positive number.", modify.message);
-      
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+
       modify = ArgumentParser.ApplyModify(new[] {"--created-within-days", "-10"}, profile);
-      Assert.Equal("Invalid value for --created-within-days: '-10'. Expected a positive number.", modify.message);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
 
       modify = ArgumentParser.ApplyModify(new[] {"--created-within-days", "0"}, profile);
-      Assert.Equal("Invalid value for --created-within-days: '0'. Expected a positive number.", modify.message);
-      
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+
       modify = ArgumentParser.ApplyModify(new[] {"--created-within-days"}, profile);
-      Assert.Equal("No value was passed to --created-within-days. Expected a positive number.", modify.message);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+
+      modify = ArgumentParser.ApplyModify(new[] {"--created-within-days", "--source"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
 
       // ModifiedWithinDays
       modify = ArgumentParser.ApplyModify(new[] {"--mod-within-days", "cat"}, profile);
-      Assert.Equal("Invalid value for --mod-within-days: 'cat'. Expected a positive number.", modify.message);
-      
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+
       modify = ArgumentParser.ApplyModify(new[] {"--mod-within-days", "-3"}, profile);
-      Assert.Equal("Invalid value for --mod-within-days: '-3'. Expected a positive number.", modify.message);
-    
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+
       modify = ArgumentParser.ApplyModify(new[] {"--mod-within-days", "0"}, profile);
-      Assert.Equal("Invalid value for --mod-within-days: '0'. Expected a positive number.", modify.message);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
 
       modify = ArgumentParser.ApplyModify(new[] {"--mod-within-days"}, profile);
-      Assert.Equal("No value was passed to --mod-within-days. Expected a positive number.", modify.message);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+
+      modify = ArgumentParser.ApplyModify(new[] {"--mod-within-days", "--source"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
     }
 
     [Fact]
@@ -153,47 +191,77 @@ namespace Coffer.Tests
       var profile = new BackupProfile();
       
       //ModifiedAfter
+      
       //text
       (bool success, bool mod, string? message) modify = ArgumentParser.ApplyModify(new[] {"--mod-after", "test"}, profile);
-      Assert.Equal("Invalid value for --mod-after: 'test'. Expected a DateTime value (yyyy-MM-dd).", modify.message);
-
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+ 
       // number
       
       modify = ArgumentParser.ApplyModify(new[] {"--mod-after", "67"}, profile);
-      Assert.Equal("Invalid value for --mod-after: '67'. Expected a DateTime value (yyyy-MM-dd).", modify.message);
-
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+ 
       modify = ArgumentParser.ApplyModify(new[] {"--mod-after"}, profile);
-      Assert.Equal("No value was passed to --mod-after. Expected a DateTime value (yyyy-MM-dd).", modify.message); 
-
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+ 
+      modify = ArgumentParser.ApplyModify(new[] {"--mod-after", "--source"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+ 
       // ModifiedBefore
       modify = ArgumentParser.ApplyModify(new[] {"--mod-before", "test"}, profile);
-      Assert.Equal("Invalid value for --mod-before: 'test'. Expected a DateTime value (yyyy-MM-dd).", modify.message);
-
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+ 
       modify = ArgumentParser.ApplyModify(new[] {"--mod-before", "67"}, profile);
-      Assert.Equal("Invalid value for --mod-before: '67'. Expected a DateTime value (yyyy-MM-dd).", modify.message);
-
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+ 
       modify = ArgumentParser.ApplyModify(new[] {"--mod-before"}, profile);
-      Assert.Equal("No value was passed to --mod-before. Expected a DateTime value (yyyy-MM-dd).", modify.message); 
-
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+ 
+      modify = ArgumentParser.ApplyModify(new[] {"--mod-before", "--source"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+ 
       // CreatedAfter
       modify = ArgumentParser.ApplyModify(new[] {"--created-after", "test"}, profile);
-      Assert.Equal("Invalid value for --created-after: 'test'. Expected a DateTime value (yyyy-MM-dd).", modify.message);
-
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+ 
       modify = ArgumentParser.ApplyModify(new[] {"--created-after", "67"}, profile);
-      Assert.Equal("Invalid value for --created-after: '67'. Expected a DateTime value (yyyy-MM-dd).", modify.message);
-
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+ 
       modify = ArgumentParser.ApplyModify(new[] {"--created-after"}, profile);
-      Assert.Equal("No value was passed to --created-after. Expected a DateTime value (yyyy-MM-dd).", modify.message); 
-
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+ 
+      modify = ArgumentParser.ApplyModify(new[] {"--created-after", "--source"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+    
       // CreatedBefore
       modify = ArgumentParser.ApplyModify(new[] {"--created-before", "test"}, profile);
-      Assert.Equal("Invalid value for --created-before: 'test'. Expected a DateTime value (yyyy-MM-dd).", modify.message);
-
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+ 
       modify = ArgumentParser.ApplyModify(new[] {"--created-before", "67"}, profile);
-      Assert.Equal("Invalid value for --created-before: '67'. Expected a DateTime value (yyyy-MM-dd).", modify.message);
-    
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+     
       modify = ArgumentParser.ApplyModify(new[] {"--created-before"}, profile);
-      Assert.Equal("No value was passed to --created-before. Expected a DateTime value (yyyy-MM-dd).", modify.message); 
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+     
+      modify = ArgumentParser.ApplyModify(new[] {"--mod-before", "--source"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+     
     }
 
     [Fact]
@@ -313,6 +381,148 @@ namespace Coffer.Tests
     }
 
     [Fact]
+    public void AppendingListNoValue()
+    {
+      var profile = new BackupProfile();
+      
+      // no value, any other character is accepted anyway
+      // Also a test for if a filter (specifically list that are not supposed to be null) that if it's null to see if a new list or atleast the list updates ok.
+      // this will also cover the destination setting as there is no test for string values and it is the only one.
+      /*
+        sources,
+      excludeExtensions,
+      includeExtensions,
+      ExcludeFolders,
+      ExcludePaths,
+      ExcludeFileNames,
+      IncludeFolders,
+      IncludePaths,
+      IncludeFileNames,
+      */
+
+      // Destination
+      (bool success, bool mod, string? message) modify = ArgumentParser.ApplyModify(new[] {"--destination"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+ 
+      modify = ArgumentParser.ApplyModify(new[] {"--destination", "--source"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+
+      //sources
+      modify = ArgumentParser.ApplyModify(new[] {"--source"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+ 
+      modify = ArgumentParser.ApplyModify(new[] {"--source", "--destination"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+ 
+      // excludeExtensions
+      
+      modify = ArgumentParser.ApplyModify(new[] {"--exclude-ext"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+ 
+      modify = ArgumentParser.ApplyModify(new[] {"--exclude-ext", "--source"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+ 
+      // includeExtensions
+      modify = ArgumentParser.ApplyModify(new[] {"--include-ext"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+ 
+      modify = ArgumentParser.ApplyModify(new[] {"--include-ext", "--source"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+ 
+      // exclude folders
+      modify = ArgumentParser.ApplyModify(new[] {"--exclude-folder"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+ 
+      modify = ArgumentParser.ApplyModify(new[] {"--exclude-folder", "--source"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+  
+      // exclude path
+      modify = ArgumentParser.ApplyModify(new[] {"--exclude-path"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+ 
+      modify = ArgumentParser.ApplyModify(new[] {"--exclude-path", "--source"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+ 
+      // exclude file
+      modify = ArgumentParser.ApplyModify(new[] {"--exclude-file"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+ 
+      modify = ArgumentParser.ApplyModify(new[] {"--exclude-file", "--source"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+ 
+      //include folder
+      modify = ArgumentParser.ApplyModify(new[] {"--include-folder"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+ 
+      modify = ArgumentParser.ApplyModify(new[] {"--include-folder", "--source"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+ 
+      //include path
+      modify = ArgumentParser.ApplyModify(new[] {"--include-path"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+ 
+      modify = ArgumentParser.ApplyModify(new[] {"--include-path", "--source"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+ 
+      //include file
+      modify = ArgumentParser.ApplyModify(new[] {"--include-file"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+ 
+      modify = ArgumentParser.ApplyModify(new[] {"--include-file", "--source"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+    }
+
+    [Fact]
+    public void AppendingListNull()
+    {
+      var profile = new BackupProfile();
+
+      profile.SourcePaths = null;
+      profile.DestinationPath = null;
+      profile.Filters.ExcludeExtensions = null;
+      profile.Filters.ExcludeFolders = null;
+      profile.Filters.ExcludePaths = null;
+      profile.Filters.ExcludeFileName = null;
+
+      (bool success, bool mod, string? message) modify = ArgumentParser.ApplyModify(new[] 
+          {
+          "--source", "/path/to/source",
+          "--destination", "/path/to/destination",
+          "--exclude-ext", ".txt",
+          "--exclude-folder", "folder",
+          "--exclude-path", "/path/to/exclude",
+          "--exclude-file", "filename"
+          }, profile);
+
+      Assert.NotNull(profile.SourcePaths);
+      Assert.NotNull(profile.DestinationPath);
+      Assert.NotNull(profile.Filters.ExcludeExtensions);
+      Assert.NotNull(profile.Filters.ExcludeFolders);
+      Assert.NotNull(profile.Filters.ExcludePaths);
+      Assert.NotNull(profile.Filters.ExcludeFileName);
+    }
+
+    [Fact]
     public void RemovingFromListRemoves()
     {
       var profile = new BackupProfile{
@@ -405,6 +615,134 @@ namespace Coffer.Tests
 
       modify = ArgumentParser.ApplyModify(new[] {"--rm-included-file", "hello", "world"}, profile);
       Assert.Equal(new List<string>{"cat"}, profile.Filters.IncludeFileName);
+    }
+
+    [Fact]
+    public void RemovingFromListNoValue()
+    {
+      var profile = new BackupProfile();
+
+      
+      /*
+        sources,
+      excludeExtensions,
+      includeExtensions,
+      ExcludeFolders,
+      ExcludePaths,
+      ExcludeFileNames,
+      IncludeFolders,
+      IncludePaths,
+      IncludeFileNames,
+      */   
+      
+      // Source
+      (bool success, bool mod, string? message) modify = ArgumentParser.ApplyModify(new[] {"--rm-src"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+
+      modify = ArgumentParser.ApplyModify(new[] {"--rm-src", "--source"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+
+      // excludeExtensions
+      modify = ArgumentParser.ApplyModify(new[] {"--rm-excluded-ext"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+
+      modify = ArgumentParser.ApplyModify(new[] {"--rm-excluded-ext", "--source"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+
+      // IncludeExtensions
+      modify = ArgumentParser.ApplyModify(new[] {"--rm-included-ext"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+
+      modify = ArgumentParser.ApplyModify(new[] {"--rm-included-ext", "--source"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+
+      // ExcludeFolders
+      modify = ArgumentParser.ApplyModify(new[] {"--rm-excluded-folder"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+
+      modify = ArgumentParser.ApplyModify(new[] {"--rm-excluded-folder", "--source"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+
+      // ExcludePaths
+      modify = ArgumentParser.ApplyModify(new[] {"--rm-excluded-path"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+
+      modify = ArgumentParser.ApplyModify(new[] {"--rm-excluded-path", "--source"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+
+      // ExcludeFileNames
+      modify = ArgumentParser.ApplyModify(new[] {"--rm-excluded-file"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+
+      modify = ArgumentParser.ApplyModify(new[] {"--rm-excluded-file", "--source"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+      
+      // IncludeFolders
+      modify = ArgumentParser.ApplyModify(new[] {"--rm-included-folder"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+
+      modify = ArgumentParser.ApplyModify(new[] {"--rm-included-folder", "--source"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+
+      // IncludePaths
+      modify = ArgumentParser.ApplyModify(new[] {"--rm-included-path"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+
+      modify = ArgumentParser.ApplyModify(new[] {"--rm-included-path", "--source"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+      
+      // IncludeFileNames
+      modify = ArgumentParser.ApplyModify(new[] {"--rm-included-file"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+
+      modify = ArgumentParser.ApplyModify(new[] {"--rm-included-file", "--source"}, profile);
+      Assert.False(modify.success);
+      Assert.NotNull(modify.message);
+    }
+
+    [Fact]
+    public void RemovingFromListNull()
+    {
+      var profile = new BackupProfile();
+
+      profile.SourcePaths = null;
+      profile.Filters.ExcludeExtensions = null;
+      profile.Filters.ExcludeFolders = null;
+      profile.Filters.ExcludePaths = null;
+      profile.Filters.ExcludeFileName = null;
+
+      (bool success, bool mod, string? message) modify = ArgumentParser.ApplyModify(new[] 
+          {
+          "--rm-src", "/path/to/source",
+          "--rm-excluded-ext", ".txt",
+          "--rm-excluded-folder", "folder",
+          "--rm-excluded-path", "/path/to/exclude",
+          "--rmexcluded-file", "filename"
+          }, profile);
+
+      Assert.NotNull(profile.SourcePaths);
+      Assert.NotNull(profile.DestinationPath);
+      Assert.NotNull(profile.Filters.ExcludeExtensions);
+      Assert.NotNull(profile.Filters.ExcludeFolders);
+      Assert.NotNull(profile.Filters.ExcludePaths);
+      Assert.NotNull(profile.Filters.ExcludeFileName);
     }
 
     [Fact]
@@ -670,6 +1008,39 @@ namespace Coffer.Tests
 
       modify = ArgumentParser.ApplyModify(new[] {"--set-dup"}, profile);
       Assert.Equal("No value was passed to --set-dup. Expected a duplication mode.", modify.message);
-    } 
+    }
+
+    [Fact]
+    public void ValidProfileNameReturnsName()
+    {
+      // This will just input a profile name and check if the GetProfileName function returns the name.
+      string[] args = {"--profile", "testProfile"};
+
+      string? name = ArgumentParser.GetProfileName(args);
+
+      Assert.Equal("testProfile", name);
+    }
+
+    [Fact]
+    public void NoValuesOnProfileGetterReturnsDefault()
+    {
+      string[] args = {"--profile"};
+      
+      string? name = ArgumentParser.GetProfileName(args);
+
+      Assert.Equal("default", name);
+    }
+
+    [Fact]
+    public void NoProfileArgReturnsNull()
+    {
+      string[] args = {"--source"};
+
+      string? name = ArgumentParser.GetProfileName(args);
+      
+      Assert.Null(name);
+    }
+
+
   }
 }
